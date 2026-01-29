@@ -15,7 +15,7 @@
 
 body {
   margin: 0;
-  display: flex;
+  display: block;
   min-width: 320px;
   min-height: 100vh;
   @apply bg-white text-slate-900 transition-colors duration-300;

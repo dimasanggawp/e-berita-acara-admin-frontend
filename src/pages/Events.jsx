@@ -3,15 +3,15 @@ import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import {
-    UserPlus, ArrowLeft, Shield, Trash2, User as UserIcon,
+    CalendarDays, ArrowLeft, Shield, Trash2, Plus,
     Loader2, AlertCircle, CheckCircle2, Edit3, X, Save,
-    Lock, MoreVertical, Search, Filter, LogOut
+    MoreVertical, Search, Filter, LogOut, Check, Power
 } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 
-const Users = () => {
-    const { logout, user: currentUser } = useAuth();
-    const [users, setUsers] = useState([]);
+const Events = () => {
+    const { logout } = useAuth();
+    const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
@@ -24,40 +24,39 @@ const Users = () => {
 
     // Form state
     const [formData, setFormData] = useState({
-        name: '',
-        username: '',
-        password: ''
+        nama_ujian: '',
+        is_active: true
     });
 
-    const fetchUsers = useCallback(async () => {
+    const fetchEvents = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await axios.get('http://localhost:8000/api/users');
-            setUsers(response.data);
+            const response = await axios.get('http://localhost:8000/api/ujians');
+            setEvents(response.data);
             setError('');
         } catch (err) {
-            console.error('Failed to fetch users', err);
-            setError('Gagal mengambil data pengguna. Periksa koneksi backend.');
+            console.error('Failed to fetch events', err);
+            setError('Gagal mengambil data ujian. Periksa koneksi backend.');
         } finally {
             setLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        fetchUsers();
-    }, [fetchUsers]);
+        fetchEvents();
+    }, [fetchEvents]);
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+        setFormData({ ...formData, [e.target.name]: value });
         setError('');
     };
 
-    const handleEdit = (user) => {
-        setEditingId(user.id);
+    const handleEdit = (event) => {
+        setEditingId(event.id);
         setFormData({
-            name: user.name,
-            username: user.username,
-            password: '' // Don't show password, let it be empty if no change
+            nama_ujian: event.nama_ujian,
+            is_active: Boolean(event.is_active)
         });
         setEditMode(true);
         setSuccess('');
@@ -68,7 +67,7 @@ const Users = () => {
     const cancelEdit = () => {
         setEditMode(false);
         setEditingId(null);
-        setFormData({ name: '', username: '', password: '' });
+        setFormData({ nama_ujian: '', is_active: true });
     };
 
     const handleSubmit = async (e) => {
@@ -79,15 +78,15 @@ const Users = () => {
 
         try {
             if (editMode) {
-                await axios.put(`http://localhost:8000/api/users/${editingId}`, formData);
-                setSuccess('Pengguna berhasil diperbarui!');
+                await axios.put(`http://localhost:8000/api/ujians/${editingId}`, formData);
+                setSuccess('Nama Ujian berhasil diperbarui!');
                 cancelEdit();
             } else {
-                await axios.post('http://localhost:8000/api/users', formData);
-                setSuccess('Pengguna baru berhasil ditambahkan!');
-                setFormData({ name: '', username: '', password: '' });
+                await axios.post('http://localhost:8000/api/ujians', formData);
+                setSuccess('Nama Ujian baru berhasil ditambahkan!');
+                setFormData({ nama_ujian: '', is_active: true });
             }
-            fetchUsers();
+            fetchEvents();
         } catch (err) {
             const msg = err.response?.data?.message || 'Gagal menyimpan data.';
             setError(typeof msg === 'object' ? Object.values(msg).join(', ') : msg);
@@ -97,25 +96,19 @@ const Users = () => {
     };
 
     const handleDelete = async (id) => {
-        if (id === currentUser?.id) {
-            setError('Anda tidak dapat menghapus akun Anda sendiri.');
-            return;
-        }
-
-        if (!window.confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) return;
+        if (!window.confirm('Apakah Anda yakin ingin menghapus ujian ini? Data terkait mungkin akan bermasalah.')) return;
 
         try {
-            await axios.delete(`http://localhost:8000/api/users/${id}`);
-            setSuccess('Pengguna berhasil dihapus.');
-            fetchUsers();
+            await axios.delete(`http://localhost:8000/api/ujians/${id}`);
+            setSuccess('Ujian berhasil dihapus.');
+            fetchEvents();
         } catch (err) {
-            setError('Gagal menghapus pengguna.');
+            setError('Gagal menghapus ujian.');
         }
     };
 
-    const filteredUsers = users.filter(u =>
-        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.username.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredEvents = events.filter(e =>
+        e.nama_ujian.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -128,11 +121,11 @@ const Users = () => {
                                 <ArrowLeft className="text-slate-500 group-hover:text-sunset transition-colors" />
                             </Link>
                             <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tighter bg-gradient-to-r from-sunset via-sunset to-violet bg-clip-text text-transparent">
-                                Kelola Pengguna
+                                Nama Ujian
                             </h1>
                         </div>
                         <p className="text-slate-500 dark:text-slate-400 font-bold text-xs sm:text-lg border-l-4 border-sunset/30 pl-5 ml-2">
-                            {editMode ? 'Perbarui informasi' : 'Tambah dan atur akses'} <span className="text-sunset font-black italic">Administrator</span> sistem
+                            {editMode ? 'Edit' : 'Kelola'} <span className="text-sunset font-black italic">Event & Agenda</span> Ujian Sekolah
                         </p>
                     </div>
 
@@ -157,10 +150,10 @@ const Users = () => {
                             <div className="flex items-center justify-between mb-8">
                                 <div className="flex items-center gap-4">
                                     <div className={`h-12 w-12 ${editMode ? 'bg-violet/10 text-violet border-violet/20' : 'bg-sunset/10 text-sunset border-sunset/20'} rounded-2xl flex items-center justify-center border`}>
-                                        {editMode ? <Edit3 size={24} /> : <UserPlus size={24} />}
+                                        {editMode ? <Edit3 size={24} /> : <Plus size={24} />}
                                     </div>
                                     <h2 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-wider">
-                                        {editMode ? 'Edit User' : 'Tambah User'}
+                                        {editMode ? 'Edit Ujian' : 'Tambah Ujian'}
                                     </h2>
                                 </div>
                                 {editMode && (
@@ -188,53 +181,26 @@ const Users = () => {
                                 )}
 
                                 <div className="space-y-2">
-                                    <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Nama Lengkap</label>
+                                    <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Nama Event Ujian</label>
                                     <div className="relative group">
-                                        <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sunset transition-colors" size={20} />
+                                        <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sunset transition-colors" size={20} />
                                         <input
                                             type="text"
-                                            name="name"
-                                            value={formData.name}
+                                            name="nama_ujian"
+                                            value={formData.nama_ujian}
                                             onChange={handleChange}
                                             required
-                                            placeholder="Masukkan nama lengkap"
+                                            placeholder="Contoh: SAS Ganjil 2024/2025"
                                             className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Username</label>
-                                    <div className="relative group">
-                                        <Shield className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sunset transition-colors" size={20} />
-                                        <input
-                                            type="text"
-                                            name="username"
-                                            value={formData.username}
-                                            onChange={handleChange}
-                                            required
-                                            placeholder="Buat username unik"
-                                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold"
-                                        />
+                                <div className="flex items-center gap-3 p-4 bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 cursor-pointer" onClick={() => setFormData(prev => ({ ...prev, is_active: !prev.is_active }))}>
+                                    <div className={`h-6 w-6 rounded-lg border-2 flex items-center justify-center transition-all ${formData.is_active ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 dark:border-slate-600'}`}>
+                                        {formData.is_active && <Check size={14} className="text-white" />}
                                     </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
-                                        {editMode ? 'Password Baru (Opsional)' : 'Password'}
-                                    </label>
-                                    <div className="relative group">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sunset transition-colors" size={20} />
-                                        <input
-                                            type="password"
-                                            name="password"
-                                            value={formData.password}
-                                            onChange={handleChange}
-                                            required={!editMode}
-                                            placeholder={editMode ? "Kosongkan jika tidak diubah" : "Minimal 8 karakter"}
-                                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold"
-                                        />
-                                    </div>
+                                    <span className="font-bold text-slate-600 dark:text-slate-300 text-sm select-none">Set sebagai Aktif (Default)</span>
                                 </div>
 
                                 <button
@@ -246,8 +212,8 @@ const Users = () => {
                                         <Loader2 className="animate-spin" />
                                     ) : (
                                         <>
-                                            {editMode ? <Save size={22} /> : <UserPlus size={22} />}
-                                            {editMode ? 'Update User' : 'Simpan User'}
+                                            {editMode ? <Save size={22} /> : <Plus size={22} />}
+                                            {editMode ? 'Update Event' : 'Simpan Event'}
                                         </>
                                     )}
                                 </button>
@@ -263,7 +229,7 @@ const Users = () => {
                                 <Search size={18} className="absolute left-4 text-slate-400 group-focus-within:text-sunset transition-colors shrink-0" />
                                 <input
                                     type="text"
-                                    placeholder="Cari administrator..."
+                                    placeholder="Cari event ujian..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="w-full bg-slate-50 dark:bg-slate-950/50 border-none rounded-2xl py-2.5 sm:py-3 pl-11 sm:pl-12 pr-4 text-slate-700 dark:text-slate-200 focus:ring-0 font-bold placeholder:font-medium text-sm sm:text-base"
@@ -277,21 +243,21 @@ const Users = () => {
                         <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl border border-slate-100 dark:border-slate-800 rounded-[2.5rem] overflow-hidden shadow-xl">
                             <div className="p-8 sm:p-10 border-b border-slate-50 dark:border-slate-800 bg-slate-50/30 dark:bg-transparent flex items-center justify-between">
                                 <h3 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-wider flex items-center gap-3">
-                                    <Shield className="text-violet" size={24} />
-                                    Daftar Admin
+                                    <CalendarDays className="text-violet" size={24} />
+                                    Daftar Nama Ujian
                                 </h3>
                                 <span className="bg-slate-100 dark:bg-slate-800 px-4 py-1.5 rounded-full text-xs font-black text-slate-500 uppercase tracking-widest">
-                                    {filteredUsers.length} User
+                                    {filteredEvents.length} Event
                                 </span>
                             </div>
 
-                            <div className="p-4 sm:p-8">
-                                {loading && users.length === 0 ? (
+                            <div className="p-4 sm:p-8 max-h-[700px] overflow-y-auto custom-scrollbar">
+                                {loading && events.length === 0 ? (
                                     <div className="py-20 flex flex-col items-center justify-center gap-4">
                                         <Loader2 className="animate-spin text-sunset" size={40} />
                                         <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Mengambil data...</p>
                                     </div>
-                                ) : filteredUsers.length === 0 ? (
+                                ) : filteredEvents.length === 0 ? (
                                     <div className="py-20 flex flex-col items-center justify-center gap-6 opacity-60">
                                         <div className="h-20 w-20 bg-slate-100 dark:bg-slate-800 rounded-[2rem] flex items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700">
                                             <Search size={32} />
@@ -300,25 +266,25 @@ const Users = () => {
                                     </div>
                                 ) : (
                                     <div className="space-y-4">
-                                        {filteredUsers.map((item) => (
+                                        {filteredEvents.map((item) => (
                                             <div
                                                 key={item.id}
                                                 className={`group bg-white dark:bg-slate-950/40 p-4 sm:p-6 rounded-3xl sm:rounded-[2rem] border ${item.id === editingId ? 'border-violet' : 'border-slate-50 dark:border-slate-800'} hover:border-sunset/20 transition-all duration-300 flex flex-col xs:flex-row items-start xs:items-center justify-between shadow-sm hover:shadow-lg gap-4`}
                                             >
                                                 <div className="flex items-center gap-4 sm:gap-6 min-w-0 w-full xs:w-auto">
-                                                    <div className={`h-12 w-12 sm:h-14 sm:w-14 shrink-0 bg-gradient-to-br ${item.id === currentUser?.id ? 'from-emerald-400 to-emerald-600' : 'from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900'} rounded-2xl flex items-center justify-center text-white font-black text-lg group-hover:scale-110 transition-transform`}>
-                                                        {item.name.charAt(0).toUpperCase()}
+                                                    <div className={`h-12 w-12 sm:h-14 sm:w-14 shrink-0 bg-gradient-to-br ${item.is_active ? 'from-emerald-400 to-emerald-600' : 'from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800'} rounded-2xl flex items-center justify-center text-white font-black text-lg group-hover:scale-110 transition-transform`}>
+                                                        <CalendarDays size={24} />
                                                     </div>
                                                     <div className="min-w-0 flex-1">
                                                         <div className="flex flex-wrap items-center gap-2 mb-1">
-                                                            <p className="font-black text-slate-800 dark:text-white text-base sm:text-lg truncate">{item.name}</p>
-                                                            {item.id === currentUser?.id && (
-                                                                <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase tracking-widest rounded-md border border-emerald-500/20">Anda</span>
+                                                            <p className="font-black text-slate-800 dark:text-white text-base sm:text-lg truncate">{item.nama_ujian}</p>
+                                                            {item.is_active ? (
+                                                                <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-widest rounded-md border border-emerald-500/20">Aktif</span>
+                                                            ) : (
+                                                                <span className="px-2 py-0.5 bg-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-md">Non-Aktif</span>
                                                             )}
                                                         </div>
-                                                        <div className="flex items-center gap-3">
-                                                            <code className="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-900 py-1 px-3 rounded-lg border border-slate-100 dark:border-slate-800 truncate block">@{item.username}</code>
-                                                        </div>
+                                                        <p className="text-xs text-slate-400 font-medium">Dibuat: {new Date(item.created_at).toLocaleDateString('id-ID')}</p>
                                                     </div>
                                                 </div>
 
@@ -326,16 +292,15 @@ const Users = () => {
                                                     <button
                                                         onClick={() => handleEdit(item)}
                                                         className="flex-1 xs:flex-none h-10 px-3 xs:px-0 xs:w-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-violet/10 hover:text-violet transition-all border xs:border-none border-slate-100 dark:border-slate-800"
-                                                        title="Edit Pengguna"
+                                                        title="Edit Event"
                                                     >
                                                         <Edit3 size={18} />
                                                         <span className="xs:hidden ml-2 font-bold text-xs uppercase tracking-wider">Edit</span>
                                                     </button>
                                                     <button
                                                         onClick={() => handleDelete(item.id)}
-                                                        disabled={item.id === currentUser?.id}
-                                                        className={`flex-1 xs:flex-none h-10 px-3 xs:px-0 xs:w-10 rounded-xl flex items-center justify-center transition-all border xs:border-none ${item.id === currentUser?.id ? 'opacity-20 cursor-not-allowed hidden xs:flex' : 'text-slate-400 hover:bg-sunset/10 hover:text-sunset border-slate-100 dark:border-slate-800'}`}
-                                                        title="Hapus Pengguna"
+                                                        className="flex-1 xs:flex-none h-10 px-3 xs:px-0 xs:w-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-sunset/10 hover:text-sunset transition-all border xs:border-none border-slate-100 dark:border-slate-800"
+                                                        title="Hapus Event"
                                                     >
                                                         <Trash2 size={18} />
                                                         <span className="xs:hidden ml-2 font-bold text-xs uppercase tracking-wider">Hapus</span>
@@ -358,4 +323,4 @@ const Users = () => {
     );
 };
 
-export default Users;
+export default Events;

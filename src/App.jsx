@@ -4,6 +4,9 @@ import { ThemeProvider } from './context/ThemeContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
+import Schedules from './pages/Schedules';
+import Events from './pages/Events';
+import Proctors from './pages/Proctors';
 
 const AppContent = () => {
   const { token, loading } = useAuth();
@@ -24,6 +27,9 @@ const AppContent = () => {
       <Route path="/login" element={!token ? <Login /> : <Navigate to="/" />} />
       <Route path="/" element={token ? <Dashboard /> : <Navigate to="/login" />} />
       <Route path="/users" element={token ? <Users /> : <Navigate to="/login" />} />
+      <Route path="/schedules" element={token ? <Schedules /> : <Navigate to="/login" />} />
+      <Route path="/events" element={token ? <Events /> : <Navigate to="/login" />} />
+      <Route path="/proctors" element={token ? <Proctors /> : <Navigate to="/login" />} />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );

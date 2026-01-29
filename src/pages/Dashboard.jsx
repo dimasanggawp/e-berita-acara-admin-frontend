@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
-import { Users, Calendar, FileText, LogOut, LayoutGrid, Database, Server, Activity, Shield } from 'lucide-react';
+import { Users, Calendar, FileText, LogOut, LayoutGrid, Database, Server, Activity, Shield, CalendarDays, UserCheck } from 'lucide-react';
 import axios from 'axios';
 
 const Dashboard = () => {
@@ -69,6 +69,15 @@ const Dashboard = () => {
                 <main className="flex-1">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-10 lg:gap-8 mb-16 lg:mb-24">
                         {/* Quick Access Cards */}
+                        <Link to="/events" className="group bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 p-8 rounded-[2.5rem] hover:border-blue-500/40 transition-all duration-500 cursor-pointer shadow-xl shadow-slate-200/50 dark:shadow-2xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 dark:bg-blue-500/10 rounded-full -mr-16 -mt-16 blur-3xl transition-transform group-hover:scale-150 duration-700" />
+                            <div className="w-14 h-14 bg-blue-500/10 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-all relative z-10 border border-blue-500/20">
+                                <CalendarDays className="w-7 h-7 text-blue-500" />
+                            </div>
+                            <h3 className="text-xl font-black mb-2 relative z-10 text-slate-800 dark:text-white">Nama Ujian</h3>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed relative z-10 font-medium whitespace-pre-wrap">Kelola master data event ujian.</p>
+                        </Link>
+
                         <div className="group bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 p-8 rounded-[2.5rem] hover:border-sunset/40 transition-all duration-500 cursor-pointer shadow-xl shadow-slate-200/50 dark:shadow-2xl relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-sunset/5 dark:bg-sunset/10 rounded-full -mr-16 -mt-16 blur-3xl transition-transform group-hover:scale-150 duration-700" />
                             <div className="w-14 h-14 bg-sunset/10 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-all relative z-10 border border-sunset/20">
@@ -78,14 +87,23 @@ const Dashboard = () => {
                             <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed relative z-10 font-medium whitespace-pre-wrap">Atur pendaftaran dan profil siswa.</p>
                         </div>
 
-                        <div className="group bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 p-8 rounded-[2.5rem] hover:border-violet/40 transition-all duration-500 cursor-pointer shadow-xl shadow-slate-200/50 dark:shadow-2xl relative overflow-hidden">
+                        <Link to="/proctors" className="group bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 p-8 rounded-[2.5rem] hover:border-pink-500/40 transition-all duration-500 cursor-pointer shadow-xl shadow-slate-200/50 dark:shadow-2xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/5 dark:bg-pink-500/10 rounded-full -mr-16 -mt-16 blur-3xl transition-transform group-hover:scale-150 duration-700" />
+                            <div className="w-14 h-14 bg-pink-500/10 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-all relative z-10 border border-pink-500/20">
+                                <UserCheck className="w-7 h-7 text-pink-500" />
+                            </div>
+                            <h3 className="text-xl font-black mb-2 relative z-10 text-slate-800 dark:text-white">Data Pengawas</h3>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed relative z-10 font-medium whitespace-pre-wrap">Kelola data guru pengawas ujian.</p>
+                        </Link>
+
+                        <Link to="/schedules" className="group bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 p-8 rounded-[2.5rem] hover:border-violet/40 transition-all duration-500 cursor-pointer shadow-xl shadow-slate-200/50 dark:shadow-2xl relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-violet/5 dark:bg-violet/10 rounded-full -mr-16 -mt-16 blur-3xl transition-transform group-hover:scale-150 duration-700" />
                             <div className="w-14 h-14 bg-violet/10 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-all relative z-10 border border-violet/20">
                                 <Calendar className="w-7 h-7 text-violet" />
                             </div>
                             <h3 className="text-xl font-black mb-2 relative z-10 text-slate-800 dark:text-white">Jadwal Ujian</h3>
                             <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed relative z-10 font-medium whitespace-pre-wrap">Atur jadwal dan pengawas ujian.</p>
-                        </div>
+                        </Link>
 
                         <div className="group bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 p-8 rounded-[2.5rem] hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-500 cursor-pointer shadow-xl shadow-slate-200/50 dark:shadow-2xl relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-slate-500/5 dark:bg-slate-100/5 rounded-full -mr-16 -mt-16 blur-3xl transition-transform group-hover:scale-150 duration-700" />
@@ -153,7 +171,7 @@ const Dashboard = () => {
                 </main>
 
                 <footer className="mt-16 sm:mt-32 text-center text-slate-400 dark:text-slate-600 border-t border-slate-100 dark:border-slate-900/50 pt-10 pb-12 font-bold tracking-tight relative z-10 transition-colors duration-500 text-xs sm:text-sm">
-                    <p>© 2026 Dashboard Admin • Dibuat dengan <span className="text-sunset animate-pulse inline-block mx-1">❤</span> oleh Antigravity Digital</p>
+                    <p>© 2026 Dashboard Admin E-Berita Acara • Dibuat oleh Tim IT SMK Kartanegara Wates</p>
                 </footer>
             </div>
         </div>
