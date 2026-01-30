@@ -60,6 +60,23 @@ const Events = () => {
         setError('');
     };
 
+    const handleJenjangChange = (jenjangValue) => {
+        const currentJenjangs = formData.jenjang ? formData.jenjang.split(', ').filter(Boolean) : [];
+        let newJenjangs;
+
+        if (currentJenjangs.includes(jenjangValue)) {
+            newJenjangs = currentJenjangs.filter(j => j !== jenjangValue);
+        } else {
+            newJenjangs = [...currentJenjangs, jenjangValue];
+        }
+
+        // Sort order
+        const order = ['X', 'XI', 'XII'];
+        newJenjangs.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+
+        setFormData({ ...formData, jenjang: newJenjangs.join(', ') });
+    };
+
     const handleEdit = (event) => {
         setEditingId(event.id);
         setFormData({
@@ -227,14 +244,21 @@ const Events = () => {
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Jenjang</label>
-                                        <input
-                                            type="text"
-                                            name="jenjang"
-                                            value={formData.jenjang}
-                                            onChange={handleChange}
-                                            placeholder="X, XI, XII"
-                                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-4 text-center text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold"
-                                        />
+                                        <div className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex flex-wrap gap-2 min-h-[58px]">
+                                            {['X', 'XI', 'XII'].map((j) => (
+                                                <button
+                                                    key={j}
+                                                    type="button"
+                                                    onClick={() => handleJenjangChange(j)}
+                                                    className={`px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wide transition-all border ${formData.jenjang.split(', ').includes(j)
+                                                            ? 'bg-sunset text-white border-sunset shadow-md'
+                                                            : 'bg-slate-50 dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800 hover:border-sunset/50'
+                                                        }`}
+                                                >
+                                                    {j}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
 
