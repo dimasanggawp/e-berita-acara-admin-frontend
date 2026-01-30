@@ -47,7 +47,13 @@ const TahunAjaran = () => {
     }, [fetchYears]);
 
     const handleChange = (e) => {
-        const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+        let value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+
+        // Remove all spaces if the field is 'tahun'
+        if (e.target.name === 'tahun' && typeof value === 'string') {
+            value = value.replace(/\s+/g, '');
+        }
+
         setFormData({ ...formData, [e.target.name]: value });
         setError('');
     };
@@ -76,13 +82,28 @@ const TahunAjaran = () => {
         setError('');
         setSuccess('');
 
+        // Remove all spaces from the input
+        const trimmedTahun = formData.tahun.replace(/\s+/g, '');
+
+        // Simple client-side duplicate check
+        const isDuplicate = years.some(y =>
+            y.tahun.toLowerCase() === trimmedTahun.toLowerCase() && y.id !== editingId
+        );
+
+        if (isDuplicate) {
+            setError('Tahun Ajaran ini sudah ada!');
+            setSubmitting(false);
+            return;
+        }
+
         try {
+            const dataToSubmit = { ...formData, tahun: trimmedTahun };
             if (editMode) {
-                await axios.put(`http://localhost:8000/api/tahun-ajaran/${editingId}`, formData);
+                await axios.put(`http://localhost:8000/api/tahun-ajaran/${editingId}`, dataToSubmit);
                 setSuccess('Tahun Ajaran berhasil diperbarui!');
                 cancelEdit();
             } else {
-                await axios.post('http://localhost:8000/api/tahun-ajaran', formData);
+                await axios.post('http://localhost:8000/api/tahun-ajaran', dataToSubmit);
                 setSuccess('Tahun Ajaran baru berhasil ditambahkan!');
                 setFormData({ tahun: '', is_active: true });
             }
