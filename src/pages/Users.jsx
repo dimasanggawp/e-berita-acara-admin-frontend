@@ -285,7 +285,7 @@ const Users = () => {
                                 </span>
                             </div>
 
-                            <div className="p-4 sm:p-8">
+                            <div className="p-4 sm:p-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
                                 {loading && users.length === 0 ? (
                                     <div className="py-20 flex flex-col items-center justify-center gap-4">
                                         <Loader2 className="animate-spin text-sunset" size={40} />

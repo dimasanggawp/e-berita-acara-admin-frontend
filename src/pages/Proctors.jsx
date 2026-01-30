@@ -177,11 +177,17 @@ const Proctors = () => {
         }
     };
 
-    const filteredProctors = proctors.filter(p =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (p.niy && p.niy.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (p.ujian && p.ujian.nama_ujian.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+    const filteredProctors = proctors.filter(p => {
+        const isActive = p.ujian?.is_active || ujians.find(u => u.id == p.ujian_id)?.is_active;
+
+        if (!isActive) return false;
+
+        return (
+            p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (p.niy && p.niy.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (p.ujian && p.ujian.nama_ujian.toLowerCase().includes(searchTerm.toLowerCase()))
+        );
+    });
 
     return (
         <div className="min-h-screen w-full bg-white dark:bg-[#020617] text-slate-900 dark:text-slate-200 flex flex-col transition-colors duration-500 overflow-x-hidden py-8 px-[4%] sm:px-[5%] lg:px-[6%]">
