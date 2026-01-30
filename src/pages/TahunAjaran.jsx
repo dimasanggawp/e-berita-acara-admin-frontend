@@ -262,7 +262,7 @@ const TahunAjaran = () => {
                                 </div>
                             </div>
 
-                            <div className="p-4 sm:p-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                            <div className="p-4 sm:p-8 max-h-[calc(100vh-320px)] overflow-y-auto custom-scrollbar">
                                 {loading ? (
                                     <div className="py-20 flex flex-col items-center justify-center gap-4 opacity-50">
                                         <Loader2 className="animate-spin text-sunset" size={40} />
