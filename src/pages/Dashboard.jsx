@@ -96,15 +96,6 @@ const Dashboard = () => {
                             <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed relative z-10 font-medium whitespace-pre-wrap">Kelola data guru pengawas ujian.</p>
                         </Link>
 
-                        <Link to="/schedules" className="group bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 p-8 rounded-[2.5rem] hover:border-violet/40 transition-all duration-500 cursor-pointer shadow-xl shadow-slate-200/50 dark:shadow-2xl relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-violet/5 dark:bg-violet/10 rounded-full -mr-16 -mt-16 blur-3xl transition-transform group-hover:scale-150 duration-700" />
-                            <div className="w-14 h-14 bg-violet/10 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-all relative z-10 border border-violet/20">
-                                <Calendar className="w-7 h-7 text-violet" />
-                            </div>
-                            <h3 className="text-xl font-black mb-2 relative z-10 text-slate-800 dark:text-white">Jadwal Ujian</h3>
-                            <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed relative z-10 font-medium whitespace-pre-wrap">Atur jadwal dan pengawas ujian.</p>
-                        </Link>
-
                         <Link to="/students" className="group bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 p-8 rounded-[2.5rem] hover:border-amber-500/40 transition-all duration-500 cursor-pointer shadow-xl shadow-slate-200/50 dark:shadow-2xl relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 dark:bg-amber-500/10 rounded-full -mr-16 -mt-16 blur-3xl transition-transform group-hover:scale-150 duration-700" />
                             <div className="w-14 h-14 bg-amber-500/10 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-all relative z-10 border border-amber-500/20">
@@ -112,6 +103,15 @@ const Dashboard = () => {
                             </div>
                             <h3 className="text-xl font-black mb-2 relative z-10 text-slate-800 dark:text-white">Peserta Ujian</h3>
                             <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed relative z-10 font-medium whitespace-pre-wrap">Kelola data peserta (siswa) ujian.</p>
+                        </Link>
+
+                        <Link to="/schedules" className="group bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 p-8 rounded-[2.5rem] hover:border-violet/40 transition-all duration-500 cursor-pointer shadow-xl shadow-slate-200/50 dark:shadow-2xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-violet/5 dark:bg-violet/10 rounded-full -mr-16 -mt-16 blur-3xl transition-transform group-hover:scale-150 duration-700" />
+                            <div className="w-14 h-14 bg-violet/10 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-all relative z-10 border border-violet/20">
+                                <Calendar className="w-7 h-7 text-violet" />
+                            </div>
+                            <h3 className="text-xl font-black mb-2 relative z-10 text-slate-800 dark:text-white">Jadwal Ujian</h3>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed relative z-10 font-medium whitespace-pre-wrap">Atur jadwal dan pengawas ujian.</p>
                         </Link>
 
                         <div className="group bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 p-8 rounded-[2.5rem] hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-500 cursor-pointer shadow-xl shadow-slate-200/50 dark:shadow-2xl relative overflow-hidden">

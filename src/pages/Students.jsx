@@ -5,14 +5,14 @@ import axios from 'axios';
 import {
     Users, ArrowLeft, Trash2, Plus,
     Loader2, AlertCircle, CheckCircle2, Edit3, X, Save,
-    Search, LogOut, UserCheck, Hash, Layout, GraduationCap
+    Search, LogOut, UserCheck, Hash, Layout, GraduationCap, CalendarDays
 } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 
 const Students = () => {
     const { logout } = useAuth();
     const [students, setStudents] = useState([]);
-    const [meta, setMeta] = useState({ ruangs: [], kelases: [] });
+    const [meta, setMeta] = useState({ ruangs: [], kelases: [], ujians: [] });
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
@@ -29,7 +29,8 @@ const Students = () => {
         nisn: '',
         nomor_peserta: '',
         ruang_id: '',
-        kelas_id: ''
+        kelas_id: '',
+        ujian_id: ''
     });
 
     const fetchData = useCallback(async () => {
@@ -61,12 +62,15 @@ const Students = () => {
 
     const handleEdit = (item) => {
         setEditingId(item.id);
+        // Find the active exam this student is currently in (sharing room)
+        const currentUjianId = item.jadwal_ujians?.[0]?.ujian_id || '';
         setFormData({
             nama: item.nama,
             nisn: item.nisn,
             nomor_peserta: item.nomor_peserta,
             ruang_id: item.ruang_id,
-            kelas_id: item.kelas_id
+            kelas_id: item.kelas_id,
+            ujian_id: currentUjianId
         });
         setEditMode(true);
         setSuccess('');
@@ -77,7 +81,7 @@ const Students = () => {
     const cancelEdit = () => {
         setEditMode(false);
         setEditingId(null);
-        setFormData({ nama: '', nisn: '', nomor_peserta: '', ruang_id: '', kelas_id: '' });
+        setFormData({ nama: '', nisn: '', nomor_peserta: '', ruang_id: '', kelas_id: '', ujian_id: '' });
     };
 
     const handleSubmit = async (e) => {
@@ -94,7 +98,7 @@ const Students = () => {
             } else {
                 await axios.post('http://localhost:8000/api/peserta-ujian', formData);
                 setSuccess('Peserta baru berhasil ditambahkan!');
-                setFormData({ nama: '', nisn: '', nomor_peserta: '', ruang_id: '', kelas_id: '' });
+                setFormData({ nama: '', nisn: '', nomor_peserta: '', ruang_id: '', kelas_id: '', ujian_id: '' });
             }
             fetchData();
         } catch (err) {
@@ -191,6 +195,25 @@ const Students = () => {
                                         {success}
                                     </div>
                                 )}
+
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Pilih Ujian Aktif</label>
+                                    <div className="relative">
+                                        <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
+                                        <select
+                                            name="ujian_id"
+                                            value={formData.ujian_id}
+                                            onChange={handleChange}
+                                            required
+                                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 pl-12 pr-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold appearance-none cursor-pointer"
+                                        >
+                                            <option value="">Pilih Event Ujian</option>
+                                            {meta.ujians.map(u => (
+                                                <option key={u.id} value={u.id}>{u.nama_ujian}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
 
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Nama Lengkap</label>
