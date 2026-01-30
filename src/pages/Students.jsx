@@ -28,7 +28,7 @@ const Students = () => {
         nama: '',
         nisn: '',
         nomor_peserta: '',
-        kelas_id: '',
+        kelas: '',
         ujian_id: ''
     });
 
@@ -67,7 +67,7 @@ const Students = () => {
             nama: item.nama,
             nisn: item.nisn,
             nomor_peserta: item.nomor_peserta,
-            kelas_id: item.kelas_id,
+            kelas: item.kelas,
             ujian_id: currentUjianId
         });
         setEditMode(true);
@@ -79,7 +79,7 @@ const Students = () => {
     const cancelEdit = () => {
         setEditMode(false);
         setEditingId(null);
-        setFormData({ nama: '', nisn: '', nomor_peserta: '', kelas_id: '', ujian_id: '' });
+        setFormData({ nama: '', nisn: '', nomor_peserta: '', kelas: '', ujian_id: '' });
     };
 
     const handleSubmit = async (e) => {
@@ -96,7 +96,7 @@ const Students = () => {
             } else {
                 await axios.post('http://localhost:8000/api/peserta-ujian', formData);
                 setSuccess('Peserta baru berhasil ditambahkan!');
-                setFormData({ nama: '', nisn: '', nomor_peserta: '', kelas_id: '', ujian_id: '' });
+                setFormData({ nama: '', nisn: '', nomor_peserta: '', kelas: '', ujian_id: '' });
             }
             fetchData();
         } catch (err) {
@@ -264,20 +264,17 @@ const Students = () => {
 
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Kelas</label>
-                                    <div className="relative">
-                                        <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
-                                        <select
-                                            name="kelas_id"
-                                            value={formData.kelas_id}
+                                    <div className="relative group">
+                                        <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sunset transition-colors" size={18} />
+                                        <input
+                                            type="text"
+                                            name="kelas"
+                                            value={formData.kelas}
                                             onChange={handleChange}
                                             required
-                                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 pl-12 pr-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold appearance-none cursor-pointer"
-                                        >
-                                            <option value="">Pilih Kelas</option>
-                                            {meta.kelases.map(k => (
-                                                <option key={k.id} value={k.id}>{k.nama_kelas}</option>
-                                            ))}
-                                        </select>
+                                            placeholder="Contoh: XII-RPL 1"
+                                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 pl-12 pr-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold"
+                                        />
                                     </div>
                                 </div>
 
@@ -352,7 +349,7 @@ const Students = () => {
                                                             </div>
                                                             <div className="flex items-center gap-1.5 text-xs text-slate-500 font-bold">
                                                                 <GraduationCap size={12} className="text-violet" />
-                                                                <span>{item.kelas?.nama_kelas || '-'}</span>
+                                                                <span>{item.kelas || '-'}</span>
                                                             </div>
                                                         </div>
                                                     </div>
