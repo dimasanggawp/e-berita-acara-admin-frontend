@@ -78,14 +78,14 @@ const Dashboard = () => {
                             <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed relative z-10 font-medium whitespace-pre-wrap">Kelola master data event ujian.</p>
                         </Link>
 
-                        <div className="group bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 p-8 rounded-[2.5rem] hover:border-sunset/40 transition-all duration-500 cursor-pointer shadow-xl shadow-slate-200/50 dark:shadow-2xl relative overflow-hidden">
+                        <Link to="/tahun-ajaran" className="group bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 p-8 rounded-[2.5rem] hover:border-sunset/40 transition-all duration-500 cursor-pointer shadow-xl shadow-slate-200/50 dark:shadow-2xl relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-sunset/5 dark:bg-sunset/10 rounded-full -mr-16 -mt-16 blur-3xl transition-transform group-hover:scale-150 duration-700" />
                             <div className="w-14 h-14 bg-sunset/10 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-all relative z-10 border border-sunset/20">
-                                <Users className="w-7 h-7 text-sunset" />
+                                <CalendarDays className="w-7 h-7 text-sunset" />
                             </div>
-                            <h3 className="text-xl font-black mb-2 relative z-10 text-slate-800 dark:text-white">Kelola Siswa</h3>
-                            <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed relative z-10 font-medium whitespace-pre-wrap">Atur pendaftaran dan profil siswa.</p>
-                        </div>
+                            <h3 className="text-xl font-black mb-2 relative z-10 text-slate-800 dark:text-white">Tahun Ajaran</h3>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed relative z-10 font-medium whitespace-pre-wrap">Kelola periode & tahun ajaran.</p>
+                        </Link>
 
                         <Link to="/proctors" className="group bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 p-8 rounded-[2.5rem] hover:border-pink-500/40 transition-all duration-500 cursor-pointer shadow-xl shadow-slate-200/50 dark:shadow-2xl relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/5 dark:bg-pink-500/10 rounded-full -mr-16 -mt-16 blur-3xl transition-transform group-hover:scale-150 duration-700" />

@@ -7,6 +7,7 @@ import Users from './pages/Users';
 import Schedules from './pages/Schedules';
 import Events from './pages/Events';
 import Proctors from './pages/Proctors';
+import TahunAjaran from './pages/TahunAjaran';
 
 const AppContent = () => {
   const { token, loading } = useAuth();
@@ -30,6 +31,7 @@ const AppContent = () => {
       <Route path="/schedules" element={token ? <Schedules /> : <Navigate to="/login" />} />
       <Route path="/events" element={token ? <Events /> : <Navigate to="/login" />} />
       <Route path="/proctors" element={token ? <Proctors /> : <Navigate to="/login" />} />
+      <Route path="/tahun-ajaran" element={token ? <TahunAjaran /> : <Navigate to="/login" />} />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
