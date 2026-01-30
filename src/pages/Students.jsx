@@ -12,7 +12,7 @@ import ThemeToggle from '../components/ThemeToggle';
 const Students = () => {
     const { logout } = useAuth();
     const [students, setStudents] = useState([]);
-    const [meta, setMeta] = useState({ ruangs: [], kelases: [], ujians: [] });
+    const [meta, setMeta] = useState({ kelases: [], ujians: [] });
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
@@ -28,7 +28,6 @@ const Students = () => {
         nama: '',
         nisn: '',
         nomor_peserta: '',
-        ruang_id: '',
         kelas_id: '',
         ujian_id: ''
     });
@@ -68,7 +67,6 @@ const Students = () => {
             nama: item.nama,
             nisn: item.nisn,
             nomor_peserta: item.nomor_peserta,
-            ruang_id: item.ruang_id,
             kelas_id: item.kelas_id,
             ujian_id: currentUjianId
         });
@@ -81,7 +79,7 @@ const Students = () => {
     const cancelEdit = () => {
         setEditMode(false);
         setEditingId(null);
-        setFormData({ nama: '', nisn: '', nomor_peserta: '', ruang_id: '', kelas_id: '', ujian_id: '' });
+        setFormData({ nama: '', nisn: '', nomor_peserta: '', kelas_id: '', ujian_id: '' });
     };
 
     const handleSubmit = async (e) => {
@@ -98,7 +96,7 @@ const Students = () => {
             } else {
                 await axios.post('http://localhost:8000/api/peserta-ujian', formData);
                 setSuccess('Peserta baru berhasil ditambahkan!');
-                setFormData({ nama: '', nisn: '', nomor_peserta: '', ruang_id: '', kelas_id: '', ujian_id: '' });
+                setFormData({ nama: '', nisn: '', nomor_peserta: '', kelas_id: '', ujian_id: '' });
             }
             fetchData();
         } catch (err) {
@@ -264,49 +262,29 @@ const Students = () => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Kelas</label>
-                                        <div className="relative">
-                                            <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
-                                            <select
-                                                name="kelas_id"
-                                                value={formData.kelas_id}
-                                                onChange={handleChange}
-                                                required
-                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 pl-12 pr-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold appearance-none cursor-pointer"
-                                            >
-                                                <option value="">Pilih Kelas</option>
-                                                {meta.kelases.map(k => (
-                                                    <option key={k.id} value={k.id}>{k.nama_kelas}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Ruang</label>
-                                        <div className="relative">
-                                            <Layout className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
-                                            <select
-                                                name="ruang_id"
-                                                value={formData.ruang_id}
-                                                onChange={handleChange}
-                                                required
-                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 pl-12 pr-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold appearance-none cursor-pointer"
-                                            >
-                                                <option value="">Pilih Ruang</option>
-                                                {meta.ruangs.map(r => (
-                                                    <option key={r.id} value={r.id}>{r.nama_ruang}</option>
-                                                ))}
-                                            </select>
-                                        </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Kelas</label>
+                                    <div className="relative">
+                                        <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
+                                        <select
+                                            name="kelas_id"
+                                            value={formData.kelas_id}
+                                            onChange={handleChange}
+                                            required
+                                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 pl-12 pr-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold appearance-none cursor-pointer"
+                                        >
+                                            <option value="">Pilih Kelas</option>
+                                            {meta.kelases.map(k => (
+                                                <option key={k.id} value={k.id}>{k.nama_kelas}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                 </div>
 
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className={`w-full bg-gradient-to-r ${editMode ? 'from-violet to-indigo-600' : 'from-sunset to-violet'} hover:shadow-[0_0_30px_rgba(255,88,65,0.3)] text-white font-black py-4 rounded-2xl transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 mt-4 text-lg`}
+                                    className={`w-full bg-gradient-to-r ${editMode ? 'from-violet to-indigo-600' : 'from-sunset to-violet'} hover:shadow-[0_0_30px_rgba(255,88,65,0.3)] text-white font-black py-4 rounded-2xl transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 mt-4 text-lg`}
                                 >
                                     {submitting ? (
                                         <Loader2 className="animate-spin" />
@@ -375,10 +353,6 @@ const Students = () => {
                                                             <div className="flex items-center gap-1.5 text-xs text-slate-500 font-bold">
                                                                 <GraduationCap size={12} className="text-violet" />
                                                                 <span>{item.kelas?.nama_kelas || '-'}</span>
-                                                            </div>
-                                                            <div className="flex items-center gap-1.5 text-xs text-slate-500 font-bold">
-                                                                <Layout size={12} className="text-blue-500" />
-                                                                <span>{item.ruang?.nama_ruang || '-'}</span>
                                                             </div>
                                                         </div>
                                                     </div>

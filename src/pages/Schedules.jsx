@@ -15,7 +15,6 @@ const Schedules = () => {
     const [options, setOptions] = useState({
         ujians: [],
         pengawas: [],
-        ruangs: [],
         mata_pelajarans: [],
         sesis: []
     });
@@ -33,7 +32,6 @@ const Schedules = () => {
     const [formData, setFormData] = useState({
         ujian_id: '',
         pengawas_id: '',
-        ruang_id: '',
         mapel_id: '',
         sesi_id: '',
         mulai_ujian: '',
@@ -73,7 +71,6 @@ const Schedules = () => {
         setFormData({
             ujian_id: item.ujian_id,
             pengawas_id: item.pengawas_id,
-            ruang_id: item.ruang_id,
             mapel_id: item.mapel_id,
             sesi_id: item.sesi_id,
             mulai_ujian: item.mulai_ujian.replace(' ', 'T').substring(0, 16),
@@ -92,7 +89,6 @@ const Schedules = () => {
         setFormData({
             ujian_id: '',
             pengawas_id: '',
-            ruang_id: '',
             mapel_id: '',
             sesi_id: '',
             mulai_ujian: '',
@@ -118,7 +114,6 @@ const Schedules = () => {
                 setFormData({
                     ujian_id: '',
                     pengawas_id: '',
-                    ruang_id: '',
                     mapel_id: '',
                     sesi_id: '',
                     mulai_ujian: '',
@@ -149,8 +144,7 @@ const Schedules = () => {
 
     const filteredSchedules = schedules.filter(s =>
         s.mata_pelajaran?.nama_mapel?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.pengawas?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.ruang?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+        s.pengawas?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -258,33 +252,18 @@ const Schedules = () => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pengawas</label>
-                                        <select
-                                            name="pengawas_id"
-                                            value={formData.pengawas_id}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-violet/10 focus:border-violet transition-all font-bold"
-                                        >
-                                            <option value="">Pilih Pengawas...</option>
-                                            {options.pengawas.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                                        </select>
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ruang</label>
-                                        <select
-                                            name="ruang_id"
-                                            value={formData.ruang_id}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-violet/10 focus:border-violet transition-all font-bold"
-                                        >
-                                            <option value="">Pilih Ruang...</option>
-                                            {options.ruangs.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-                                        </select>
-                                    </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pengawas</label>
+                                    <select
+                                        name="pengawas_id"
+                                        value={formData.pengawas_id}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-violet/10 focus:border-violet transition-all font-bold"
+                                    >
+                                        <option value="">Pilih Pengawas...</option>
+                                        {options.pengawas.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                    </select>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
@@ -351,7 +330,7 @@ const Schedules = () => {
                                 <Search size={20} className="absolute left-4 text-slate-400 group-focus-within:text-violet transition-colors shrink-0" />
                                 <input
                                     type="text"
-                                    placeholder="Cari mapel, pengawas, atau ruang..."
+                                    placeholder="Cari mapel atau pengawas..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="w-full bg-slate-50 dark:bg-slate-950/50 border-none rounded-2xl py-3 pl-12 pr-4 text-slate-700 dark:text-slate-200 focus:ring-0 font-bold placeholder:font-medium text-sm sm:text-base"
@@ -409,15 +388,6 @@ const Schedules = () => {
                                                 <div className="min-w-0 flex-1">
                                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Pengawas</p>
                                                     <p className="text-sm sm:text-base font-black text-slate-700 dark:text-slate-200">{item.pengawas?.name}</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-11 w-11 bg-slate-50 dark:bg-slate-950 rounded-2xl flex items-center justify-center text-slate-400 shrink-0 border border-slate-100 dark:border-slate-800">
-                                                    <MapPin size={20} />
-                                                </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Ruang</p>
-                                                    <p className="text-sm sm:text-base font-black text-slate-700 dark:text-slate-200">{item.ruang?.name}</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-4">
