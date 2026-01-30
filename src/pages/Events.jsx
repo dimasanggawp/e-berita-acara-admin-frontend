@@ -25,6 +25,8 @@ const Events = () => {
     // Form state
     const [formData, setFormData] = useState({
         nama_ujian: '',
+        tahun_ajaran: '',
+        jenjang: '',
         is_active: true
     });
 
@@ -56,6 +58,8 @@ const Events = () => {
         setEditingId(event.id);
         setFormData({
             nama_ujian: event.nama_ujian,
+            tahun_ajaran: event.tahun_ajaran || '',
+            jenjang: event.jenjang || '',
             is_active: Boolean(event.is_active)
         });
         setEditMode(true);
@@ -67,7 +71,7 @@ const Events = () => {
     const cancelEdit = () => {
         setEditMode(false);
         setEditingId(null);
-        setFormData({ nama_ujian: '', is_active: true });
+        setFormData({ nama_ujian: '', tahun_ajaran: '', jenjang: '', is_active: true });
     };
 
     const handleSubmit = async (e) => {
@@ -84,7 +88,7 @@ const Events = () => {
             } else {
                 await axios.post('http://localhost:8000/api/ujians', formData);
                 setSuccess('Nama Ujian baru berhasil ditambahkan!');
-                setFormData({ nama_ujian: '', is_active: true });
+                setFormData({ nama_ujian: '', tahun_ajaran: '', jenjang: '', is_active: true });
             }
             fetchEvents();
         } catch (err) {
@@ -196,6 +200,31 @@ const Events = () => {
                                     </div>
                                 </div>
 
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Tahun Ajaran</label>
+                                        <input
+                                            type="text"
+                                            name="tahun_ajaran"
+                                            value={formData.tahun_ajaran}
+                                            onChange={handleChange}
+                                            placeholder="2024/2025"
+                                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-4 text-center text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Jenjang</label>
+                                        <input
+                                            type="text"
+                                            name="jenjang"
+                                            value={formData.jenjang}
+                                            onChange={handleChange}
+                                            placeholder="X, XI, XII"
+                                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-4 text-center text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold"
+                                        />
+                                    </div>
+                                </div>
+
                                 <div className="flex items-center gap-3 p-4 bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 cursor-pointer" onClick={() => setFormData(prev => ({ ...prev, is_active: !prev.is_active }))}>
                                     <div className={`h-6 w-6 rounded-lg border-2 flex items-center justify-center transition-all ${formData.is_active ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 dark:border-slate-600'}`}>
                                         {formData.is_active && <Check size={14} className="text-white" />}
@@ -284,7 +313,11 @@ const Events = () => {
                                                                 <span className="px-2 py-0.5 bg-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-md">Non-Aktif</span>
                                                             )}
                                                         </div>
-                                                        <p className="text-xs text-slate-400 font-medium">Dibuat: {new Date(item.created_at).toLocaleDateString('id-ID')}</p>
+                                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400 font-medium">
+                                                            <span>TP: {item.tahun_ajaran || '-'}</span>
+                                                            <span>{item.jenjang ? `Jenjang: ${item.jenjang}` : ''}</span>
+                                                        </div>
+                                                        <p className="text-xs text-slate-400 font-medium mt-1">Dibuat: {new Date(item.created_at).toLocaleDateString('id-ID')}</p>
                                                     </div>
                                                 </div>
 
