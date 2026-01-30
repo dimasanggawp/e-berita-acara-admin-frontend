@@ -30,15 +30,21 @@ const Events = () => {
         is_active: true
     });
 
+    const [availableTahunAjaran, setAvailableTahunAjaran] = useState([]);
+
     const fetchEvents = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await axios.get('http://localhost:8000/api/ujians');
-            setEvents(response.data);
+            const [eventsRes, tahunAjaranRes] = await Promise.all([
+                axios.get('http://localhost:8000/api/ujians'),
+                axios.get('http://localhost:8000/api/tahun-ajaran')
+            ]);
+            setEvents(eventsRes.data);
+            setAvailableTahunAjaran(tahunAjaranRes.data);
             setError('');
         } catch (err) {
-            console.error('Failed to fetch events', err);
-            setError('Gagal mengambil data ujian. Periksa koneksi backend.');
+            console.error('Failed to fetch data', err);
+            setError('Gagal mengambil data. Periksa koneksi backend.');
         } finally {
             setLoading(false);
         }
@@ -203,14 +209,21 @@ const Events = () => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Tahun Ajaran</label>
-                                        <input
-                                            type="text"
-                                            name="tahun_ajaran"
-                                            value={formData.tahun_ajaran}
-                                            onChange={handleChange}
-                                            placeholder="2024/2025"
-                                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-4 text-center text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold"
-                                        />
+                                        <div className="relative">
+                                            <select
+                                                name="tahun_ajaran"
+                                                value={formData.tahun_ajaran}
+                                                onChange={handleChange}
+                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-4 text-center text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold appearance-none cursor-pointer"
+                                            >
+                                                <option value="" disabled>Pilih Tahun</option>
+                                                {availableTahunAjaran.map((ta) => (
+                                                    <option key={ta.id} value={ta.id}>
+                                                        {ta.tahun}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Jenjang</label>
@@ -314,7 +327,7 @@ const Events = () => {
                                                             )}
                                                         </div>
                                                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400 font-medium">
-                                                            <span>TP: {item.tahun_ajaran || '-'}</span>
+                                                            <span>TP: {availableTahunAjaran.find(ta => String(ta.id) === String(item.tahun_ajaran))?.tahun || item.tahun_ajaran || '-'}</span>
                                                             <span>{item.jenjang ? `Jenjang: ${item.jenjang}` : ''}</span>
                                                         </div>
                                                         <p className="text-xs text-slate-400 font-medium mt-1">Dibuat: {new Date(item.created_at).toLocaleDateString('id-ID')}</p>
