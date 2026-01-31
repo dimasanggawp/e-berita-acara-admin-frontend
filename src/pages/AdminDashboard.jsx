@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
-import { Users, Calendar, FileText, LogOut, LayoutGrid, Database, Server, Activity, Shield, CalendarDays, UserCheck } from 'lucide-react';
+import { Users, Calendar, FileText, LogOut, LayoutGrid, Database, Server, Activity, Shield, CalendarDays, UserCheck, BookOpen } from 'lucide-react';
 import axios from 'axios';
 
-const Dashboard = () => {
+const AdminDashboard = () => {
     const { user, logout } = useAuth();
     const [systemStatus, setSystemStatus] = useState({
-        api: 'loading',     // 'loading', 'ok', 'error'
-        database: 'loading', // 'loading', 'connected', 'disconnected'
+        api: 'loading',
+        database: 'loading',
         details: { engine: '', name: '' }
     });
 
@@ -32,7 +32,7 @@ const Dashboard = () => {
         };
 
         checkSystemHealth();
-        const interval = setInterval(checkSystemHealth, 5000); // Poll every 5 seconds
+        const interval = setInterval(checkSystemHealth, 5000);
         return () => clearInterval(interval);
     }, []);
 
@@ -68,7 +68,6 @@ const Dashboard = () => {
 
                 <main className="flex-1">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-10 lg:gap-8 mb-16 lg:mb-24">
-                        {/* Quick Access Cards */}
                         <Link to="/tahun-ajaran" className="group bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 p-8 rounded-[2.5rem] hover:border-sunset/40 transition-all duration-500 cursor-pointer shadow-xl shadow-slate-200/50 dark:shadow-2xl relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-sunset/5 dark:bg-sunset/10 rounded-full -mr-16 -mt-16 blur-3xl transition-transform group-hover:scale-150 duration-700" />
                             <div className="w-14 h-14 bg-sunset/10 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-all relative z-10 border border-sunset/20">
@@ -105,13 +104,13 @@ const Dashboard = () => {
                             <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed relative z-10 font-medium whitespace-pre-wrap">Kelola data peserta (siswa) ujian.</p>
                         </Link>
 
-                        <Link to="/schedules" className="group bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 p-8 rounded-[2.5rem] hover:border-violet/40 transition-all duration-500 cursor-pointer shadow-xl shadow-slate-200/50 dark:shadow-2xl relative overflow-hidden">
+                        <Link to="/exam-schedule" className="group bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 p-8 rounded-[2.5rem] hover:border-violet/40 transition-all duration-500 cursor-pointer shadow-xl shadow-slate-200/50 dark:shadow-2xl relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-violet/5 dark:bg-violet/10 rounded-full -mr-16 -mt-16 blur-3xl transition-transform group-hover:scale-150 duration-700" />
                             <div className="w-14 h-14 bg-violet/10 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-all relative z-10 border border-violet/20">
                                 <Calendar className="w-7 h-7 text-violet" />
                             </div>
                             <h3 className="text-xl font-black mb-2 relative z-10 text-slate-800 dark:text-white">Jadwal Ujian</h3>
-                            <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed relative z-10 font-medium whitespace-pre-wrap">Atur jadwal dan pengawas ujian.</p>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed relative z-10 font-medium whitespace-pre-wrap">Atur pemetaan pengawas & ruang.</p>
                         </Link>
 
                         <div className="group bg-white dark:bg-slate-900/30 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 p-8 rounded-[2.5rem] hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-500 cursor-pointer shadow-xl shadow-slate-200/50 dark:shadow-2xl relative overflow-hidden">
@@ -133,7 +132,6 @@ const Dashboard = () => {
                         </Link>
                     </div>
 
-                    {/* System Status Section - Fixed for Mobile Responsiveness */}
                     <div className="bg-slate-50/50 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 rounded-[2.5rem] sm:rounded-[3.5rem] p-6 sm:p-10 lg:p-14 shadow-xl dark:shadow-2xl relative overflow-hidden transition-colors duration-500">
                         <div className="absolute bottom-0 right-0 w-80 h-80 bg-sunset/5 rounded-full -mr-40 -mb-40 blur-[120px] dark:blur-[150px]" />
                         <h2 className="text-xl sm:text-3xl font-black mb-8 sm:mb-12 flex items-center gap-3 sm:gap-5 text-slate-800 dark:text-white">
@@ -165,7 +163,7 @@ const Dashboard = () => {
                                         <p className="text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mb-1">Sinkronisasi Data</p>
                                         <p className="text-sm sm:text-xl font-black text-slate-700 dark:text-slate-200 truncate sm:break-words">
                                             {systemStatus.database === 'connected'
-                                                ? `${systemStatus.details.engine.toUpperCase()} (${systemStatus.details.name})`
+                                                ? `${systemStatus.details.engine} (${systemStatus.details.name})`
                                                 : systemStatus.database === 'loading' ? 'Memuat...' : 'Database Offline'}
                                         </p>
                                     </div>
@@ -180,11 +178,11 @@ const Dashboard = () => {
                 </main>
 
                 <footer className="mt-16 sm:mt-32 text-center text-slate-400 dark:text-slate-600 border-t border-slate-100 dark:border-slate-900/50 pt-10 pb-12 font-bold tracking-tight relative z-10 transition-colors duration-500 text-xs sm:text-sm">
-                    <p>© 2026 Dashboard Admin E-Berita Acara • Dibuat oleh Tim IT SMK Kartanegara Wates</p>
+                    <p>© 2026 Admin Dashboard • SMK Kartanegara Wates</p>
                 </footer>
             </div>
         </div>
     );
 };
 
-export default Dashboard;
+export default AdminDashboard;

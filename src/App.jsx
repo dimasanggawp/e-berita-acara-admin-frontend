@@ -2,13 +2,13 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import Users from './pages/Users';
-import Schedules from './pages/Schedules';
 import Events from './pages/Events';
 import Proctors from './pages/Proctors';
 import TahunAjaran from './pages/TahunAjaran';
 import Students from './pages/Students';
+import ExamSchedule from './pages/ExamSchedule';
 
 const AppContent = () => {
   const { token, loading } = useAuth();
@@ -27,13 +27,13 @@ const AppContent = () => {
   return (
     <Routes>
       <Route path="/login" element={!token ? <Login /> : <Navigate to="/" />} />
-      <Route path="/" element={token ? <Dashboard /> : <Navigate to="/login" />} />
+      <Route path="/" element={token ? <AdminDashboard /> : <Navigate to="/login" />} />
       <Route path="/users" element={token ? <Users /> : <Navigate to="/login" />} />
-      <Route path="/schedules" element={token ? <Schedules /> : <Navigate to="/login" />} />
       <Route path="/events" element={token ? <Events /> : <Navigate to="/login" />} />
       <Route path="/proctors" element={token ? <Proctors /> : <Navigate to="/login" />} />
       <Route path="/tahun-ajaran" element={token ? <TahunAjaran /> : <Navigate to="/login" />} />
       <Route path="/students" element={token ? <Students /> : <Navigate to="/login" />} />
+      <Route path="/exam-schedule" element={token ? <ExamSchedule /> : <Navigate to="/login" />} />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
