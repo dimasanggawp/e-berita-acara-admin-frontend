@@ -16,7 +16,6 @@ const Schedules = () => {
         ujians: [],
         pengawas: [],
         mata_pelajarans: [],
-        sesis: []
     });
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -33,7 +32,6 @@ const Schedules = () => {
         ujian_id: '',
         pengawas_id: '',
         mapel_id: '',
-        sesi_id: '',
         mulai_ujian: '',
         ujian_berakhir: '',
         total_siswa: ''
@@ -72,7 +70,6 @@ const Schedules = () => {
             ujian_id: item.ujian_id,
             pengawas_id: item.pengawas_id,
             mapel_id: item.mapel_id,
-            sesi_id: item.sesi_id,
             mulai_ujian: item.mulai_ujian.replace(' ', 'T').substring(0, 16),
             ujian_berakhir: item.ujian_berakhir.replace(' ', 'T').substring(0, 16),
             total_siswa: item.total_siswa
@@ -90,7 +87,6 @@ const Schedules = () => {
             ujian_id: '',
             pengawas_id: '',
             mapel_id: '',
-            sesi_id: '',
             mulai_ujian: '',
             ujian_berakhir: '',
             total_siswa: ''
@@ -115,7 +111,6 @@ const Schedules = () => {
                     ujian_id: '',
                     pengawas_id: '',
                     mapel_id: '',
-                    sesi_id: '',
                     mulai_ujian: '',
                     ujian_berakhir: '',
                     total_siswa: ''
@@ -221,35 +216,20 @@ const Schedules = () => {
                                     </select>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mata Pelajaran</label>
-                                        <select
-                                            name="mapel_id"
-                                            value={formData.mapel_id}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-violet/10 focus:border-violet transition-all font-bold"
-                                        >
-                                            <option value="">Pilih Mapel...</option>
-                                            {options.mata_pelajarans.map(m => (
-                                                <option key={m.id} value={m.id}>{m.nama_mapel} ({m.kelas?.nama_kelas || 'N/A'})</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sesi</label>
-                                        <select
-                                            name="sesi_id"
-                                            value={formData.sesi_id}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-violet/10 focus:border-violet transition-all font-bold"
-                                        >
-                                            <option value="">Pilih Sesi...</option>
-                                            {options.sesis.map(s => <option key={s.id} value={s.id}>{s.nama_sesi}</option>)}
-                                        </select>
-                                    </div>
+                                <div className="space-y-1.5 w-full">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mata Pelajaran</label>
+                                    <select
+                                        name="mapel_id"
+                                        value={formData.mapel_id}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-violet/10 focus:border-violet transition-all font-bold"
+                                    >
+                                        <option value="">Pilih Mapel...</option>
+                                        {options.mata_pelajarans.map(m => (
+                                            <option key={m.id} value={m.id}>{m.nama_mapel} ({m.kelas?.nama_kelas || 'N/A'})</option>
+                                        ))}
+                                    </select>
                                 </div>
 
                                 <div className="space-y-1.5">
