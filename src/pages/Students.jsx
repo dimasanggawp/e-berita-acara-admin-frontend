@@ -305,7 +305,7 @@ const Students = () => {
                                             value={formData.nama}
                                             onChange={handleChange}
                                             required
-                                            placeholder="Contoh: Ahmad Dhani, S.Kom"
+                                            placeholder="Contoh: Ahmad Dhani"
                                             className="w-full bg-white dark:bg-slate-950 border border-[#e2e8f0] dark:border-slate-800 rounded-[1.25rem] py-4 pl-12 pr-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/5 focus:border-sunset/30 transition-all font-bold placeholder:text-slate-300"
                                         />
                                     </div>
@@ -313,7 +313,7 @@ const Students = () => {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-[11px] font-black text-[#94a3b8] dark:text-slate-500 uppercase tracking-widest ml-1">NISN / NIP</label>
+                                        <label className="text-[11px] font-black text-[#94a3b8] dark:text-slate-500 uppercase tracking-widest ml-1">NISN</label>
                                         <div className="relative group">
                                             <FileSpreadsheet className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94a3b8] group-focus-within:text-sunset transition-colors" size={18} />
                                             <input
@@ -322,7 +322,7 @@ const Students = () => {
                                                 value={formData.nisn}
                                                 onChange={handleChange}
                                                 required
-                                                placeholder="Nomor Induk"
+                                                placeholder="NISN"
                                                 className="w-full bg-white dark:bg-slate-950 border border-[#e2e8f0] dark:border-slate-800 rounded-[1.25rem] py-4 pl-12 pr-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/5 focus:border-sunset/30 transition-all font-bold placeholder:text-slate-300"
                                             />
                                         </div>
