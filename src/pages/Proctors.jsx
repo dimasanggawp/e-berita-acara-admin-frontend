@@ -469,7 +469,7 @@ const Proctors = () => {
                                 <div className="w-12 h-12 bg-white dark:bg-slate-900 rounded-full shadow-sm flex items-center justify-center mx-auto mb-3 text-slate-400 group-hover:text-emerald-500 transition-colors">
                                     <FileSpreadsheet size={24} />
                                 </div>
-                                <p className="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1">Upload file CSV Anda</p>
+                                <p className="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1">Upload file Excel Anda</p>
                                 <p className="text-xs text-slate-400 mb-4">Pastikan format sesuai template</p>
 
                                 <button
@@ -506,7 +506,7 @@ const Proctors = () => {
                                 <input
                                     type="file"
                                     name="file"
-                                    accept=".csv,.txt"
+                                    accept=".xlsx,.xls,.csv"
                                     required
                                     className="w-full text-sm text-slate-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-wide file:bg-slate-100 dark:file:bg-slate-800 file:text-slate-600 dark:file:text-slate-300 hover:file:bg-emerald-500 hover:file:text-white transition-all cursor-pointer"
                                 />
