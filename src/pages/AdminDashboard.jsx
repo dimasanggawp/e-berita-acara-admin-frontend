@@ -64,8 +64,8 @@ const AdminDashboard = () => {
         return () => clearInterval(interval);
     }, []);
 
-    const fetchAttendance = useCallback(async () => {
-        setAttendanceLoading(true);
+    const fetchAttendance = useCallback(async (showLoader = false) => {
+        if (showLoader) setAttendanceLoading(true);
         try {
             const params = {};
             if (selectedUjian) params.ujian_id = selectedUjian;
@@ -85,7 +85,7 @@ const AdminDashboard = () => {
         } catch (err) {
             console.error('Failed to fetch attendance stats', err);
         } finally {
-            setAttendanceLoading(false);
+            if (showLoader) setAttendanceLoading(false);
         }
     }, [selectedUjian, selectedDate]);
 
@@ -143,8 +143,16 @@ const AdminDashboard = () => {
     }, [selectedUjian, selectedCampus, selectedDate]);
 
     useEffect(() => {
-        fetchAttendance();
+        fetchAttendance(true); // Show loader on initial load
         fetchCampusAttendance();
+
+        // Poll every 10 seconds for near real-time updates
+        const interval = setInterval(() => {
+            fetchAttendance(); // Silent background refresh
+            fetchCampusAttendance();
+        }, 3000);
+
+        return () => clearInterval(interval);
     }, [fetchAttendance, fetchCampusAttendance]);
 
     const handleUjianChange = (e) => {
