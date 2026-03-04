@@ -28,3 +28,29 @@ body {
 #root {
   width: 100%;
 }
+
+/* Print styles for Berita Acara */
+@media print {
+  body {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .print\\:hidden {
+    display: none !important;
+  }
+
+  .print\\:static {
+    position: static !important;
+  }
+
+  .print\\:block {
+    display: block !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+}

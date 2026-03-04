@@ -21,6 +21,7 @@ const Events = () => {
     // Form state
     const [formData, setFormData] = useState({
         nama_ujian: '',
+        jenis_ujian: 'Ujian Teori',
         tahun_ajaran: '',
         jenjang: '',
         is_active: true
@@ -77,6 +78,7 @@ const Events = () => {
         setEditingId(event.id);
         setFormData({
             nama_ujian: event.nama_ujian,
+            jenis_ujian: event.jenis_ujian || 'Ujian Teori',
             tahun_ajaran: event.tahun_ajaran || '',
             jenjang: event.jenjang || '',
             is_active: Boolean(event.is_active)
@@ -90,7 +92,7 @@ const Events = () => {
     const cancelEdit = () => {
         setEditMode(false);
         setEditingId(null);
-        setFormData({ nama_ujian: '', tahun_ajaran: '', jenjang: '', is_active: true });
+        setFormData({ nama_ujian: '', jenis_ujian: 'Ujian Teori', tahun_ajaran: '', jenjang: '', is_active: true });
     };
 
     const handleSubmit = async (e) => {
@@ -107,7 +109,7 @@ const Events = () => {
             } else {
                 await axios.post('/api/ujians', formData);
                 setSuccess('Nama Ujian baru berhasil ditambahkan!');
-                setFormData({ nama_ujian: '', tahun_ajaran: '', jenjang: '', is_active: true });
+                setFormData({ nama_ujian: '', jenis_ujian: 'Ujian Teori', tahun_ajaran: '', jenjang: '', is_active: true });
             }
             fetchEvents();
         } catch (err) {
@@ -197,6 +199,25 @@ const Events = () => {
                                         placeholder="Contoh: SAS Ganjil 2024/2025"
                                         className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold"
                                     />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Jenis Ujian</label>
+                                <div className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 flex gap-2">
+                                    {['Ujian Teori', 'Ujian Praktek'].map((jenis) => (
+                                        <button
+                                            key={jenis}
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, jenis_ujian: jenis }))}
+                                            className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wide transition-all border ${formData.jenis_ujian === jenis
+                                                    ? 'bg-sunset text-white border-sunset shadow-md'
+                                                    : 'bg-slate-50 dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800 hover:border-sunset/50'
+                                                }`}
+                                        >
+                                            {jenis === 'Ujian Teori' ? '📝' : '🔧'} {jenis}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
 
@@ -329,6 +350,10 @@ const Events = () => {
                                                     </div>
                                                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400 font-medium">
                                                         <span>TP: {availableTahunAjaran.find(ta => String(ta.id) === String(item.tahun_ajaran))?.tahun || item.tahun_ajaran || '-'}</span>
+                                                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest border ${item.jenis_ujian === 'Ujian Praktek'
+                                                            ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                                                            : 'bg-blue-500/10 text-blue-600 border-blue-500/20'
+                                                            }`}>{item.jenis_ujian === 'Ujian Praktek' ? '🔧 Praktek' : '📝 Teori'}</span>
                                                         <span>{item.jenjang ? `Jenjang: ${item.jenjang}` : ''}</span>
                                                     </div>
                                                     <p className="text-xs text-slate-400 font-medium mt-1">Dibuat: {new Date(item.created_at).toLocaleDateString('id-ID')}</p>

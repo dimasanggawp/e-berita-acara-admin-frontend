@@ -11,6 +11,7 @@ import TahunAjaran from './pages/TahunAjaran';
 import Students from './pages/Students';
 import ExamSchedule from './pages/ExamSchedule';
 import Rooms from './pages/Rooms';
+import Reports from './pages/Reports';
 
 const AppContent = () => {
   const { token, loading } = useAuth();
@@ -38,6 +39,7 @@ const AppContent = () => {
         <Route path="/students" element={<Students />} />
         <Route path="/exam-schedule" element={<ExamSchedule />} />
         <Route path="/rooms" element={<Rooms />} />
+        <Route path="/reports" element={<Reports />} />
       </Route>
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
