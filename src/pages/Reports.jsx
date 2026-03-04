@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 import {
-    FileText, Loader2, Search, Eye, Printer, X, ChevronDown
+    FileText, Loader2, Search, Eye, Printer, X, ChevronDown, Trash2
 } from 'lucide-react';
 
 const Reports = () => {
@@ -14,6 +15,7 @@ const Reports = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedReport, setSelectedReport] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [isBulkPrinting, setIsBulkPrinting] = useState(false);
 
     const fetchReports = useCallback(async () => {
         setLoading(true);
@@ -56,7 +58,8 @@ const Reports = () => {
             r.pengawas?.name?.toLowerCase().includes(term) ||
             r.kelas?.nama_kelas?.toLowerCase().includes(term) ||
             r.nama_mapel?.toLowerCase().includes(term) ||
-            r.ruang?.toLowerCase().includes(term)
+            r.ruang?.toLowerCase().includes(term) ||
+            r.kelas_name?.toLowerCase().includes(term)
         );
         // Also filter by tahun ajaran if selected (match via ujian's tahun_ajaran)
         const matchesTahunAjaran = !selectedTahunAjaran ||
@@ -70,36 +73,42 @@ const Reports = () => {
     };
 
     const handlePrint = () => {
+        // Calling window.print() behaves as "Save as PDF" on most modern desktop browsers
         window.print();
     };
 
-    const formatDate = (dateStr) => {
-        if (!dateStr) return '-';
-        const date = new Date(dateStr);
-        const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-        const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-        return `${days[date.getDay()]}, tanggal ${date.getDate()} bulan ${date.getMonth() + 1} tahun ${date.getFullYear()}`;
+    const handleBulkPrint = () => {
+        setIsBulkPrinting(true);
+        // Wait a bit for React to render the massive hidden div and images to load
+        setTimeout(() => {
+            window.print();
+            setIsBulkPrinting(false);
+        }, 1000);
     };
 
-    const formatTime = (dateStr) => {
-        if (!dateStr) return '-';
-        const date = new Date(dateStr);
-        return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-    };
-
-    const getSesiText = (sesi) => {
-        if (!sesi || sesi === '-') return '-';
-        const num = sesi.replace(/\D/g, '');
-        const words = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam'];
-        return `${num} (${words[parseInt(num)] || num})`;
-    };
-
-    const getTingkatText = (kelasName) => {
-        if (!kelasName) return '-';
-        if (kelasName.startsWith('XII')) return 'XII (Dua Belas)';
-        if (kelasName.startsWith('XI')) return 'XI (Sebelas)';
-        if (kelasName.startsWith('X')) return 'X (Sepuluh)';
-        return kelasName;
+    const handleDelete = (id, e) => {
+        e.stopPropagation();
+        Swal.fire({
+            title: 'Hapus Berita Acara?',
+            text: "Data yang dihapus tidak bisa dikembalikan!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await axios.delete(`/api/laporan/${id}`);
+                    Swal.fire('Terhapus!', 'Berita acara berhasil dihapus.', 'success');
+                    fetchReports();
+                } catch (error) {
+                    console.error('Failed to delete report', error);
+                    Swal.fire('Gagal!', 'Gagal menghapus berita acara.', 'error');
+                }
+            }
+        });
     };
 
     return (
@@ -156,14 +165,24 @@ const Reports = () => {
 
                 {/* Reports Grid */}
                 <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl border border-slate-100 dark:border-slate-800 rounded-[2.5rem] overflow-hidden shadow-xl">
-                    <div className="p-8 sm:p-10 border-b border-slate-50 dark:border-slate-800 bg-slate-50/30 dark:bg-transparent flex items-center justify-between">
+                    <div className="p-8 sm:p-10 border-b border-slate-50 dark:border-slate-800 bg-slate-50/30 dark:bg-transparent flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <h3 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-wider flex items-center gap-3">
                             <FileText className="text-violet" size={24} />
                             Daftar Berita Acara
                         </h3>
-                        <span className="bg-slate-100 dark:bg-slate-800 px-4 py-1.5 rounded-full text-xs font-black text-slate-500 uppercase tracking-widest">
-                            {filteredReports.length} Laporan
-                        </span>
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                            {filteredReports.length > 0 && (
+                                <button
+                                    onClick={handleBulkPrint}
+                                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl transition-all font-bold text-xs"
+                                >
+                                    <Printer size={16} /> Download Semua PDF
+                                </button>
+                            )}
+                            <span className="bg-slate-100 dark:bg-slate-800 px-4 py-1.5 rounded-full text-xs font-black text-slate-500 uppercase tracking-widest hidden sm:inline-block">
+                                {filteredReports.length} Laporan
+                            </span>
+                        </div>
                     </div>
 
                     <div className="p-4 sm:p-8 max-h-[65vh] overflow-y-auto">
@@ -202,7 +221,7 @@ const Reports = () => {
                                                 </div>
                                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400 font-medium">
                                                     <span>📝 {report.nama_mapel}</span>
-                                                    <span>🏫 {report.kelas?.nama_kelas || '-'}</span>
+                                                    <span>🏫 {report.kelas?.nama_kelas || report.kelas_name || '-'}</span>
                                                     <span>🚪 {report.ruang} - {report.kampus}</span>
                                                     <span>📅 {new Date(report.created_at).toLocaleDateString('id-ID')}</span>
                                                 </div>
@@ -213,12 +232,21 @@ const Reports = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); openReport(report); }}
-                                            className="flex items-center gap-2 px-4 py-2 bg-violet/10 text-violet rounded-xl border border-violet/20 hover:bg-violet/20 transition-all font-bold text-xs"
-                                        >
-                                            <Eye size={16} /> Lihat
-                                        </button>
+                                        <div className="flex items-center gap-2 shrink-0">
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); openReport(report); }}
+                                                className="flex items-center gap-2 px-4 py-2 bg-violet/10 text-violet rounded-xl border border-violet/20 hover:bg-violet/20 transition-all font-bold text-xs"
+                                            >
+                                                <Eye size={16} /> Lihat
+                                            </button>
+                                            <button
+                                                onClick={(e) => handleDelete(report.id, e)}
+                                                className="flex items-center gap-2 px-3 py-2 bg-red-50 text-red-500 rounded-xl border border-red-100 hover:bg-red-100 transition-all font-bold text-xs"
+                                                title="Hapus Laporan"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -227,8 +255,8 @@ const Reports = () => {
                 </div>
             </div>
 
-            {/* Berita Acara Modal */}
-            {showModal && selectedReport && (
+            {/* Berita Acara Modal (Single View) */}
+            {showModal && selectedReport && !isBulkPrinting && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center print:static print:block">
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm print:hidden" onClick={() => setShowModal(false)} />
 
@@ -241,7 +269,7 @@ const Reports = () => {
                                     onClick={handlePrint}
                                     className="flex items-center gap-2 px-4 py-2 bg-violet text-white rounded-xl font-bold text-sm hover:bg-violet/90 transition-all"
                                 >
-                                    <Printer size={16} /> Cetak
+                                    <Printer size={16} /> Download PDF
                                 </button>
                                 <button onClick={() => setShowModal(false)} className="p-2 hover:bg-slate-100 rounded-xl transition-all">
                                     <X size={20} className="text-slate-500" />
@@ -251,6 +279,26 @@ const Reports = () => {
 
                         {/* Berita Acara Document */}
                         <BeritaAcaraDocument report={selectedReport} />
+                    </div>
+                </div>
+            )}
+
+            {/* Bulk Print Hidden Container */}
+            {isBulkPrinting && (
+                <div className="fixed inset-0 z-[200] bg-white print:block overflow-y-auto">
+                    {/* Status message while building the massive DOM */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center print:hidden">
+                        <Loader2 className="animate-spin text-violet mb-4" size={48} />
+                        <h2 className="text-xl font-black text-slate-800">Menyiapkan {filteredReports.length} Dokumen PDF...</h2>
+                        <p className="text-slate-500 font-bold mt-2">Mohon tunggu sebentar, dialog print akan segera muncul.</p>
+                    </div>
+
+                    <div className="hidden print:block">
+                        {filteredReports.map((report, idx) => (
+                            <div key={report.id} style={{ pageBreakAfter: idx < filteredReports.length - 1 ? 'always' : 'auto' }}>
+                                <BeritaAcaraDocument report={report} />
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}
@@ -265,9 +313,9 @@ const BeritaAcaraDocument = ({ report }) => {
     const formatDateFormal = (dateStr) => {
         if (!dateStr) return '-';
         const date = new Date(dateStr);
-        const days = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
-        const months = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
-        return `${days[date.getDay()]}. tanggal ${date.getDate()} bulan ${months[date.getMonth()]} tahun ${date.getFullYear()}`;
+        const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        return `${days[date.getDay()]}, tanggal ${date.getDate()} bulan ${months[date.getMonth()]} tahun ${date.getFullYear()}`;
     };
 
     const formatTime = (dateStr) => {
@@ -284,17 +332,24 @@ const BeritaAcaraDocument = ({ report }) => {
     };
 
     const getTingkatText = (kelasName) => {
-        if (!kelasName) return '-';
-        if (kelasName.startsWith('XII')) return 'XII (Dua Belas)';
-        if (kelasName.startsWith('XI')) return 'XI (Sebelas)';
-        if (kelasName.startsWith('X')) return 'X (Sepuluh)';
-        return kelasName;
+        if (!kelasName || kelasName === '-' || String(kelasName).startsWith('Gabungan')) return '-';
+        if (String(kelasName).startsWith('XII')) return 'XII';
+        if (String(kelasName).startsWith('XI')) return 'XI';
+        if (String(kelasName).startsWith('X')) return 'X';
+        return '-';
     };
 
     const ujianName = report.ujian?.nama_ujian || '-';
-    const jenisUjian = report.ujian?.jenis_ujian || 'Ujian Praktek';
-    const tahunAjaran = '2025/2026';
     const headerTitle = `${ujianName.toUpperCase()}`;
+
+    // Debugging line to see what exactly `report` contains for kelas
+    console.log("Rendering BeritaAcaraDocument with report data:", {
+        kelasObject: report.kelas,
+        kelasNameProp: report.kelas_name
+    });
+
+    // LaporanController explicitly returns 'kelas' object if it exists (from DB relation) or falls back to 'kelas_name' from the getAssignment/list API if it's mixed
+    const displayKelas = report.kelas?.nama_kelas || report.kelas_name || (typeof report.kelas === 'string' ? report.kelas : '-');
 
     // Generate blank lines for absent names
     const absentLines = report.absent_details
@@ -302,38 +357,39 @@ const BeritaAcaraDocument = ({ report }) => {
         : [];
     const blankLinesNeeded = Math.max(5 - absentLines.length, 2);
 
+    // Prepare signature URL. LaporanController returns signature_url which is already a full path
+    const sigUrl = report.signature_url || (report.signature_path ? (report.signature_path.startsWith('http') ? report.signature_path : `${window.location.protocol}//${window.location.hostname}:8000/storage/${report.signature_path}`) : null);
+
     return (
         <div className="bg-white text-black" style={{ fontFamily: 'Times New Roman, serif', fontSize: '12pt' }}>
             {/* Page */}
-            <div className="px-[20mm] py-[10mm] print:px-[20mm] print:py-[10mm]" style={{ minHeight: '297mm', position: 'relative' }}>
+            <div className="px-[20mm] py-[10mm] print:px-[20mm] print:py-[10mm] flex flex-col" style={{ minHeight: '297mm', position: 'relative' }}>
 
                 {/* Kop Surat */}
-                <div className="mb-2">
+                <div className="mb-2 shrink-0">
                     <img src="/kop-surat.png" alt="Kop Surat SMK Kartanegara Wates" className="w-full" />
                 </div>
-                <hr className="border-t-[3px] border-black mb-1" />
-                <hr className="border-t-[1px] border-black mb-6" />
 
                 {/* Title */}
-                <div className="text-center mb-6">
+                <div className="text-center mb-6 mt-4 shrink-0">
                     <p className="font-bold text-[14pt] tracking-wide">BERITA ACARA</p>
                     <p className="font-bold text-[12pt]">{headerTitle}</p>
                     <p className="font-bold text-[12pt]">SMK KARTANEGARA WATES KAB. KEDIRI</p>
                 </div>
 
                 {/* Opening Paragraph */}
-                <p className="mb-4 text-justify leading-relaxed">
-                    Pada hari ini {formatDateFormal(report.mulai_ujian)}, telah diselenggarakan {ujianName.toLowerCase()} kelas {getTingkatText(report.kelas?.nama_kelas)} matapelajaran {report.nama_mapel?.toLowerCase() || '-'} mulai pukul {formatTime(report.mulai_ujian)} sampai pukul {formatTime(report.ujian_berakhir)} pada :
+                <p className="mb-4 text-justify leading-relaxed shrink-0">
+                    Pada hari ini {formatDateFormal(report.mulai_ujian)}, telah diselenggarakan {ujianName.toLowerCase()} kelas {getTingkatText(displayKelas)} matapelajaran {report.nama_mapel?.toLowerCase() || '-'} mulai pukul {formatTime(report.mulai_ujian)} sampai pukul {formatTime(report.ujian_berakhir)} pada :
                 </p>
 
                 {/* Info Table */}
-                <div className="ml-8 mb-6">
+                <div className="ml-8 mb-6 shrink-0">
                     <table className="w-full">
                         <tbody>
                             <InfoRow label="1. Sekolah" value="SMK Kartanegara Wates" />
                             <InfoRow label="    Alamat" value="Jl. Raya Bondo - Wates, Kabupaten Kediri, Jawa Timur" />
-                            <InfoRow label="    Tingkat" value={getTingkatText(report.kelas?.nama_kelas)} />
-                            <InfoRow label="    Kelas" value={report.kelas?.nama_kelas || '-'} />
+                            <InfoRow label="    Tingkat" value={getTingkatText(displayKelas)} />
+                            <InfoRow label="    Kelas" value={displayKelas} />
                             <InfoRow label="    Ruang" value={`${report.ruang || '-'} - ${report.kampus || '-'}`} />
                             <InfoRow label="    Sesi" value={getSesiText(report.sesi)} />
                             <InfoRow label="    Jumlah peserta seharusnya" value={`${report.total_expected} peserta`} />
@@ -343,7 +399,7 @@ const BeritaAcaraDocument = ({ report }) => {
                     </table>
 
                     {/* Absent details */}
-                    <div className="mt-2">
+                    <div className="mt-2 shrink-0">
                         <p style={{ paddingLeft: '1.5em' }}>Nama peserta yang tidak hadir :</p>
                         <div className="mt-2 ml-6">
                             {absentLines.map((line, i) => (
@@ -357,15 +413,15 @@ const BeritaAcaraDocument = ({ report }) => {
                 </div>
 
                 {/* Section 2: Catatan */}
-                <div className="mb-8">
+                <div className="mb-8 shrink-0">
                     <p className="font-bold mb-2">2. Catatan pelaksanaan :</p>
                     <div className="border border-black rounded-sm min-h-[120px] p-3">
                         <p className="whitespace-pre-wrap">{report.notes || ''}</p>
                     </div>
                 </div>
 
-                {/* Section 3 & 4: Pengawas & Tanda Tangan */}
-                <div className="flex justify-between mt-8">
+                {/* Section 3 & 4: Pengawas & Tanda Tangan (Pushed to bottom) */}
+                <div className="flex justify-between mt-auto pt-8" style={{ pageBreakInside: 'avoid' }}>
                     <div className="w-[45%]">
                         <p className="font-bold mb-2">3. Nama pengawas ruang</p>
                         <div className="border border-black rounded-sm min-h-[80px] p-3 flex items-center justify-center">
@@ -375,8 +431,8 @@ const BeritaAcaraDocument = ({ report }) => {
                     <div className="w-[45%]">
                         <p className="font-bold mb-2">4. Tanda tangan pengawas</p>
                         <div className="border border-black rounded-sm min-h-[80px] p-2 flex items-center justify-center">
-                            {report.signature_url ? (
-                                <img src={report.signature_url} alt="Tanda tangan" className="max-h-[70px] object-contain" />
+                            {sigUrl ? (
+                                <img src={sigUrl} alt="Tanda tangan" className="max-h-[70px] object-contain" />
                             ) : (
                                 <p className="text-slate-400 text-sm italic">Tidak ada tanda tangan</p>
                             )}
