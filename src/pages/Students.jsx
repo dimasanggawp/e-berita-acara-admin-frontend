@@ -27,7 +27,7 @@ const Students = () => {
         nisn: '',
         nomor_peserta: '',
         kelas: '',
-        ruang: '',
+        ruang_id: '',
         sesi: '',
         ujian_id: ''
     });
@@ -43,7 +43,7 @@ const Students = () => {
             const params = ujianId ? { ujian_id: ujianId } : {};
             const [studentsRes, metaRes] = await Promise.all([
                 axios.get('http://localhost:8000/api/peserta-ujian', { params }),
-                axios.get('http://localhost:8000/api/peserta-ujian-meta')
+                axios.get('http://localhost:8000/api/peserta-ujian-meta', { params })
             ]);
             setStudents(studentsRes.data);
             setMeta(metaRes.data);
@@ -79,7 +79,7 @@ const Students = () => {
             nisn: item.nisn,
             nomor_peserta: item.nomor_peserta,
             kelas: item.kelas,
-            ruang: item.ruang || '',
+            ruang_id: item.ruang_id || '',
             sesi: item.sesi || '',
             ujian_id: item.ujian_id || ''
         });
@@ -92,7 +92,7 @@ const Students = () => {
     const cancelEdit = () => {
         setEditMode(false);
         setEditingId(null);
-        setFormData({ nama: '', nisn: '', nomor_peserta: '', kelas: '', ruang: '', sesi: '', ujian_id: '' });
+        setFormData({ nama: '', nisn: '', nomor_peserta: '', kelas: '', ruang_id: '', sesi: '', ujian_id: '' });
     };
 
     const handleSubmit = async (e) => {
@@ -109,7 +109,7 @@ const Students = () => {
             } else {
                 await axios.post('http://localhost:8000/api/peserta-ujian', formData);
                 setSuccess('Peserta baru berhasil ditambahkan!');
-                setFormData({ nama: '', nisn: '', nomor_peserta: '', kelas: '', ruang: '', sesi: '', ujian_id: '' });
+                setFormData({ nama: '', nisn: '', nomor_peserta: '', kelas: '', ruang_id: '', sesi: '', ujian_id: '' });
             }
             fetchData();
         } catch (err) {
@@ -334,7 +334,7 @@ const Students = () => {
                                             value={formData.kelas}
                                             onChange={handleChange}
                                             required
-                                            placeholder="Kelas"
+                                            placeholder="Contoh: X IPA 1"
                                             className="w-full bg-white dark:bg-slate-950 border border-[#e2e8f0] dark:border-slate-800 rounded-[1.25rem] py-4 pl-12 pr-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/5 focus:border-sunset/30 transition-all font-bold placeholder:text-slate-300"
                                         />
                                     </div>
@@ -343,14 +343,18 @@ const Students = () => {
                                     <label className="text-[11px] font-black text-[#94a3b8] dark:text-slate-500 uppercase tracking-widest ml-1">Ruang</label>
                                     <div className="relative group">
                                         <Layout className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94a3b8] group-focus-within:text-sunset transition-colors" size={18} />
-                                        <input
-                                            type="text"
-                                            name="ruang"
-                                            value={formData.ruang}
+                                        <select
+                                            name="ruang_id"
+                                            value={formData.ruang_id || ''}
                                             onChange={handleChange}
-                                            placeholder="Ruang"
-                                            className="w-full bg-white dark:bg-slate-950 border border-[#e2e8f0] dark:border-slate-800 rounded-[1.25rem] py-4 pl-12 pr-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/5 focus:border-sunset/30 transition-all font-bold placeholder:text-slate-300"
-                                        />
+                                            required
+                                            className="w-full bg-white dark:bg-slate-950 border border-[#e2e8f0] dark:border-slate-800 rounded-[1.25rem] py-4 pl-12 pr-4 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-sunset/5 focus:border-sunset/30 transition-all font-bold appearance-none cursor-pointer"
+                                        >
+                                            <option value="" disabled>Pilih Ruang</option>
+                                            {meta.ruangs && meta.ruangs.map(r => (
+                                                <option key={r.id} value={r.id}>{r.nama_ruang} ({r.kampus})</option>
+                                            ))}
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -447,7 +451,7 @@ const Students = () => {
                                                         </div>
                                                         <div className="flex items-center gap-1.5 text-xs text-slate-500 font-bold">
                                                             <Layout size={12} className="text-violet" />
-                                                            <span>{item.ruang || '-'}</span>
+                                                            <span>{item.ruang?.nama_ruang || '-'}</span>
                                                         </div>
                                                         <div className="flex items-center gap-1.5 text-xs text-slate-500 font-bold">
                                                             <CalendarDays size={12} className="text-sunset" />

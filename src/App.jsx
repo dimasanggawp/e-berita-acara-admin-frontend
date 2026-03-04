@@ -10,6 +10,7 @@ import Proctors from './pages/Proctors';
 import TahunAjaran from './pages/TahunAjaran';
 import Students from './pages/Students';
 import ExamSchedule from './pages/ExamSchedule';
+import Rooms from './pages/Rooms';
 
 const AppContent = () => {
   const { token, loading } = useAuth();
@@ -36,6 +37,7 @@ const AppContent = () => {
         <Route path="/tahun-ajaran" element={<TahunAjaran />} />
         <Route path="/students" element={<Students />} />
         <Route path="/exam-schedule" element={<ExamSchedule />} />
+        <Route path="/rooms" element={<Rooms />} />
       </Route>
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

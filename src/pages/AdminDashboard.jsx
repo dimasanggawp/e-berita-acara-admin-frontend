@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Users, LayoutGrid, Database, Server, CalendarDays, Loader2, Filter } from 'lucide-react';
+import { Users, LayoutGrid, Database, Server, CalendarDays, Loader2, Filter, School, GraduationCap, ChevronRight, CheckCircle2, XCircle, Clock, MapPin } from 'lucide-react';
 import axios from 'axios';
 import {
     Chart as ChartJS,
@@ -27,6 +27,19 @@ const AdminDashboard = () => {
     const [selectedDate, setSelectedDate] = useState('');
     const [ujiansList, setUjiansList] = useState([]);
     const [availableDates, setAvailableDates] = useState([]);
+
+    // Drill-down states
+    const [campusData, setCampusData] = useState([]);
+    const [campusLoading, setCampusLoading] = useState(false);
+    const [selectedCampus, setSelectedCampus] = useState(null);
+
+    const [classData, setClassData] = useState([]);
+    const [classLoading, setClassLoading] = useState(false);
+    const [selectedClass, setSelectedClass] = useState(null);
+
+    const [studentListData, setStudentListData] = useState([]);
+    const [studentListLoading, setStudentListLoading] = useState(false);
+    const [showStudentModal, setShowStudentModal] = useState(false);
 
     useEffect(() => {
         const checkSystemHealth = async () => {
@@ -76,9 +89,63 @@ const AdminDashboard = () => {
         }
     }, [selectedUjian, selectedDate]);
 
+    const fetchCampusAttendance = useCallback(async () => {
+        if (!selectedUjian) return;
+        setCampusLoading(true);
+        try {
+            const params = { ujian_id: selectedUjian };
+            if (selectedDate) params.date = selectedDate;
+            const res = await axios.get('http://localhost:8000/api/dashboard/attendance-by-campus', { params });
+            setCampusData(res.data);
+        } catch (err) {
+            console.error('Failed to fetch campus stats', err);
+        } finally {
+            setCampusLoading(false);
+        }
+    }, [selectedUjian, selectedDate]);
+
+    const fetchClassAttendance = useCallback(async (campusName) => {
+        if (!selectedUjian || !campusName) return;
+        setClassLoading(true);
+        setSelectedCampus(campusName);
+        setSelectedClass(null); // Reset class drill-down
+        try {
+            const params = { ujian_id: selectedUjian, kampus: campusName };
+            if (selectedDate) params.date = selectedDate;
+            const res = await axios.get('http://localhost:8000/api/dashboard/attendance-by-class', { params });
+            setClassData(res.data);
+        } catch (err) {
+            console.error('Failed to fetch class stats', err);
+        } finally {
+            setClassLoading(false);
+        }
+    }, [selectedUjian, selectedDate]);
+
+    const fetchStudentList = useCallback(async (className) => {
+        if (!selectedUjian || !selectedCampus || !className) return;
+        setStudentListLoading(true);
+        setSelectedClass(className);
+        setShowStudentModal(true);
+        try {
+            const params = {
+                ujian_id: selectedUjian,
+                kampus: selectedCampus,
+                kelas: className
+            };
+            if (selectedDate) params.date = selectedDate;
+            const res = await axios.get('http://localhost:8000/api/dashboard/attendance-students', { params });
+            setStudentListData(res.data);
+        } catch (err) {
+            console.error('Failed to fetch student list', err);
+        } finally {
+            setStudentListLoading(false);
+        }
+    }, [selectedUjian, selectedCampus, selectedDate]);
+
     useEffect(() => {
         fetchAttendance();
-    }, [fetchAttendance]);
+        fetchCampusAttendance();
+    }, [fetchAttendance, fetchCampusAttendance]);
 
     const handleUjianChange = (e) => {
         setSelectedUjian(e.target.value);
@@ -281,6 +348,222 @@ const AdminDashboard = () => {
                     </div>
                 )}
             </div>
+
+            {/* Campus and Class Drill-down Section */}
+            <div className="mb-16 lg:mb-24 animate-in fade-in slide-in-from-bottom-10 duration-1000">
+                <div className="flex items-center justify-between mb-8">
+                    <h2 className="text-xl sm:text-3xl font-black text-slate-800 dark:text-white flex items-center gap-4">
+                        <div className="h-8 w-8 sm:h-12 sm:w-12 bg-indigo-500/10 text-indigo-500 rounded-xl flex items-center justify-center border border-indigo-500/20">
+                            <School size={24} />
+                        </div>
+                        Distribusi Per Gedung
+                    </h2>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {campusData.map((c) => (
+                        <div key={c.kampus} className={`bg-white dark:bg-slate-900/40 backdrop-blur-xl border ${selectedCampus === c.kampus ? 'border-indigo-500 ring-2 ring-indigo-500/10' : 'border-slate-100 dark:border-slate-800'} rounded-[2.5rem] p-8 shadow-xl transition-all duration-300 hover:shadow-2xl overflow-hidden relative group`}>
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-indigo-500/10 transition-colors" />
+
+                            <div className="flex items-center justify-between mb-8 relative z-10">
+                                <div>
+                                    <h3 className="text-2xl font-black text-slate-800 dark:text-white">{c.kampus}</h3>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Gedung Pendidikan</p>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-3xl font-black text-indigo-500">{c.percentage}%</span>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kehadiran</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 mb-8 relative z-10">
+                                <div className="bg-slate-50 dark:bg-slate-950/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Hadir</p>
+                                    <p className="text-xl font-black text-emerald-500">{c.attended}</p>
+                                </div>
+                                <div className="bg-slate-50 dark:bg-slate-950/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Absen</p>
+                                    <p className="text-xl font-black text-red-500">{c.not_attended}</p>
+                                </div>
+                            </div>
+
+                            {/* Progress Bar */}
+                            <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full mb-8 relative overflow-hidden">
+                                <div
+                                    className="h-full bg-gradient-to-r from-indigo-500 to-violet rounded-full transition-all duration-1000"
+                                    style={{ width: `${c.percentage}%` }}
+                                />
+                            </div>
+
+                            <button
+                                onClick={() => fetchClassAttendance(c.kampus)}
+                                className="w-full py-4 bg-slate-50 dark:bg-slate-950/50 hover:bg-indigo-500 hover:text-white border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 transition-all relative z-10 group/btn"
+                            >
+                                {classLoading && selectedCampus === c.kampus ? <Loader2 className="animate-spin" size={18} /> : (
+                                    <>
+                                        Lihat Detail Kelas
+                                        <ChevronRight size={18} className="group-hover/btn:translate-x-1 transition-transform" />
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Class View Grid (Conditional) */}
+                {selectedCampus && classData.length > 0 && (
+                    <div className="mt-12 animate-in fade-in slide-in-from-top-10 duration-700">
+                        <div className="flex items-center justify-between mb-8">
+                            <h2 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white flex items-center gap-4">
+                                <div className="h-8 w-8 bg-amber-500/10 text-amber-500 rounded-xl flex items-center justify-center border border-amber-500/20">
+                                    <GraduationCap size={20} />
+                                </div>
+                                Statistik Kelas di {selectedCampus}
+                            </h2>
+                            <button
+                                onClick={() => { setSelectedCampus(null); setClassData([]); }}
+                                className="text-xs font-black text-slate-400 hover:text-sunset uppercase tracking-widest transition-colors"
+                            >
+                                Tutup Detail
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {classData.map((item) => (
+                                <div
+                                    key={item.kelas}
+                                    onClick={() => fetchStudentList(item.kelas)}
+                                    className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 shadow-md hover:shadow-xl hover:border-amber-500/30 transition-all cursor-pointer group"
+                                >
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h4 className="text-lg font-black text-slate-800 dark:text-white group-hover:text-amber-500 transition-colors">{item.kelas}</h4>
+                                        <span className={`text-xs font-black px-3 py-1 rounded-full ${item.percentage >= 80 ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600'}`}>
+                                            {item.percentage}%
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
+                                        <span>{item.attended} Hadir</span>
+                                        <span>{item.not_attended} Absen</span>
+                                    </div>
+                                    <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                        <div
+                                            className={`h-full rounded-full transition-all duration-1000 ${item.percentage >= 80 ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                                            style={{ width: `${item.percentage}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Student List Modal */}
+            {showStudentModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 backdrop-blur-md bg-slate-950/40 animate-in fade-in duration-300">
+                    <div className="bg-white dark:bg-slate-900 w-full max-w-4xl max-h-[85vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 border border-slate-100 dark:border-slate-800">
+                        {/* Modal Header */}
+                        <div className="p-8 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between">
+                            <div className="flex items-center gap-5">
+                                <div className="h-12 w-12 bg-amber-500/10 text-amber-600 rounded-2xl flex items-center justify-center border border-amber-500/20">
+                                    <Users size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white">Daftar Kehadiran: {selectedClass}</h3>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{selectedCampus}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowStudentModal(false)}
+                                className="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-400"
+                            >
+                                <XCircle size={24} />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                            {studentListLoading ? (
+                                <div className="py-20 flex flex-col items-center justify-center gap-4">
+                                    <Loader2 className="animate-spin text-amber-500" size={40} />
+                                    <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Mengambil daftar siswa...</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-8">
+                                    {/* Summary Row */}
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-2xl p-5">
+                                            <div className="flex items-center gap-3 mb-1">
+                                                <CheckCircle2 size={16} className="text-emerald-500" />
+                                                <span className="text-xs font-black text-emerald-600 uppercase tracking-widest">Hadir</span>
+                                            </div>
+                                            <p className="text-2xl font-black text-emerald-600">{studentListData.filter(s => s.status === 'Hadir').length}</p>
+                                        </div>
+                                        <div className="bg-red-500/5 border border-red-500/10 rounded-2xl p-5">
+                                            <div className="flex items-center gap-3 mb-1">
+                                                <XCircle size={16} className="text-red-500" />
+                                                <span className="text-xs font-black text-red-600 uppercase tracking-widest">Belum Hadir</span>
+                                            </div>
+                                            <p className="text-2xl font-black text-red-600">{studentListData.filter(s => s.status !== 'Hadir').length}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Student List Table */}
+                                    <div className="border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
+                                        <table className="w-full text-left">
+                                            <thead className="bg-slate-50/50 dark:bg-slate-950/50 border-b border-slate-100 dark:border-slate-800">
+                                                <tr>
+                                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama Peserta</th>
+                                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">No. Peserta</th>
+                                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
+                                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Waktu Scan</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
+                                                {studentListData.map((student) => (
+                                                    <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
+                                                                    {student.nama.charAt(0)}
+                                                                </div>
+                                                                <span className="font-bold text-slate-700 dark:text-white text-sm">{student.nama}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <span className="font-mono text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+                                                                {student.nomor_peserta}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-center">
+                                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${student.status === 'Hadir'
+                                                                    ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                                                                    : 'bg-red-500/10 text-red-600 border-red-500/20'
+                                                                }`}>
+                                                                {student.status === 'Hadir' ? <CheckCircle2 size={12} /> : <Clock size={12} />}
+                                                                {student.status}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            {student.waktu_datang ? (
+                                                                <span className="text-xs font-bold text-slate-500">
+                                                                    {new Date(student.waktu_datang).toLocaleTimeString('id-id', { hour: '2-digit', minute: '2-digit' })}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-xs font-black text-slate-300">-</span>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Infrastructure Status */}
             <div className="bg-slate-50/50 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-100 dark:border-slate-800/50 rounded-[2.5rem] sm:rounded-[3.5rem] p-6 sm:p-10 lg:p-14 shadow-xl dark:shadow-2xl relative overflow-hidden transition-colors duration-500">

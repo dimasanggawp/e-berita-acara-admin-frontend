@@ -12,6 +12,7 @@ const ExamSchedule = () => {
     const [schedules, setSchedules] = useState([]);
     const [ujians, setUjians] = useState([]);
     const [proctors, setProctors] = useState([]);
+    const [ruangs, setRuangs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -28,7 +29,7 @@ const ExamSchedule = () => {
         ujian_id: '',
         pengawas_id: '',
         pengawas_pengganti_id: '',
-        ruang: '',
+        ruang_id: '',
         nama_mapel: '',
         sesi: '',
         mulai_ujian: '',
@@ -37,37 +38,54 @@ const ExamSchedule = () => {
 
     const [importUjianId, setImportUjianId] = useState('');
 
-    const fetchData = useCallback(async () => {
+    // Fetch initial data (Ujians and Schedules)
+    const fetchInitialData = useCallback(async () => {
         setLoading(true);
         try {
-            const [schedulesRes, ujiansRes, proctorsRes] = await Promise.all([
+            const [schedulesRes, ujiansRes] = await Promise.all([
                 axios.get('http://localhost:8000/api/jadwal-ujian'),
-                axios.get('http://localhost:8000/api/ujians'),
-                axios.get('http://localhost:8000/api/pengawas')
+                axios.get('http://localhost:8000/api/ujians')
             ]);
             setSchedules(schedulesRes.data);
             const activeUjians = ujiansRes.data.filter(u => u.is_active);
             setUjians(activeUjians);
-            setProctors(proctorsRes.data);
 
             if (activeUjians.length > 0 && !formData.ujian_id) {
                 setImportUjianId(activeUjians[0].id);
                 setFormData(prev => ({ ...prev, ujian_id: activeUjians[0].id }));
             }
-            if (proctorsRes.data.length > 0 && !formData.pengawas_id) {
-                setFormData(prev => ({ ...prev, pengawas_id: proctorsRes.data[0].id }));
-            }
         } catch (error) {
-            console.error('Failed to fetch data', error);
-            setError('Gagal mengambil data dari server.');
+            console.error('Failed to fetch initial data', error);
+            setError('Gagal mengambil data awal dari server.');
         } finally {
             setLoading(false);
         }
-    }, [formData.ujian_id, formData.pengawas_id]);
+    }, []);
+
+    // Fetch dependent data (Proctors and Rooms) when ujian_id changes
+    const fetchDependentData = useCallback(async (ujianId) => {
+        if (!ujianId) return;
+        try {
+            const [proctorsRes, ruangsRes] = await Promise.all([
+                axios.get('http://localhost:8000/api/pengawas', { params: { ujian_id: ujianId } }),
+                axios.get('http://localhost:8000/api/ruang', { params: { ujian_id: ujianId } })
+            ]);
+            setProctors(proctorsRes.data);
+            setRuangs(ruangsRes.data);
+        } catch (error) {
+            console.error('Failed to fetch dependent data', error);
+        }
+    }, []);
 
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        fetchInitialData();
+    }, [fetchInitialData]);
+
+    useEffect(() => {
+        if (formData.ujian_id) {
+            fetchDependentData(formData.ujian_id);
+        }
+    }, [formData.ujian_id, fetchDependentData]);
 
     // Derived state for filtered proctors based on selected Ujian
     const filteredProctors = proctors.filter(p => p.ujian_id == formData.ujian_id);
@@ -98,7 +116,7 @@ const ExamSchedule = () => {
             ujian_id: schedule.ujian_id,
             pengawas_id: schedule.pengawas_id,
             pengawas_pengganti_id: schedule.pengawas_pengganti_id || '',
-            ruang: schedule.ruang || '',
+            ruang_id: schedule.ruang_id || '',
             nama_mapel: schedule.nama_mapel || '',
             sesi: schedule.sesi || '',
             mulai_ujian: schedule.mulai_ujian.replace(' ', 'T').substring(0, 16),
@@ -117,7 +135,7 @@ const ExamSchedule = () => {
             ujian_id: ujians[0]?.id || '',
             pengawas_id: proctors[0]?.id || '',
             pengawas_pengganti_id: '',
-            ruang: '',
+            ruang_id: '',
             nama_mapel: '',
             sesi: '',
             mulai_ujian: '',
@@ -130,7 +148,7 @@ const ExamSchedule = () => {
         try {
             await axios.delete(`http://localhost:8000/api/jadwal-ujian/${id}`);
             setSuccess('Jadwal berhasil dihapus');
-            fetchData();
+            fetchInitialData();
         } catch (err) {
             setError('Gagal menghapus jadwal');
         }
@@ -152,14 +170,14 @@ const ExamSchedule = () => {
                 setFormData(prev => ({
                     ...prev,
                     pengawas_pengganti_id: '',
-                    ruang: '',
+                    ruang_id: '',
                     nama_mapel: '',
                     sesi: '',
                     mulai_ujian: '',
                     ujian_berakhir: '',
                 }));
             }
-            fetchData();
+            fetchInitialData();
         } catch (err) {
             setError(err.response?.data?.message || 'Gagal menyimpan jadwal');
         } finally {
@@ -186,7 +204,7 @@ const ExamSchedule = () => {
                 setError('Beberapa baris gagal: ' + res.data.errors.slice(0, 3).join(', '));
             }
             setShowImportModal(false);
-            fetchData();
+            fetchInitialData();
         } catch (err) {
             setError(err.response?.data?.message || 'Gagal mengimpor jadwal');
         } finally {
@@ -282,9 +300,22 @@ const ExamSchedule = () => {
                             <div className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Event Ujian</label>
-                                    <select name="ujian_id" value={formData.ujian_id} onChange={handleFormChange} required className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-5 text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold appearance-none cursor-pointer">
-                                        {ujians.map(u => <option key={u.id} value={u.id}>{u.nama_ujian}</option>)}
-                                    </select>
+                                    <div className="relative group">
+                                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sunset transition-colors" size={18} />
+                                        <select
+                                            name="ujian_id"
+                                            value={formData.ujian_id}
+                                            onChange={handleFormChange}
+                                            required
+                                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-10 text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold appearance-none cursor-pointer"
+                                        >
+                                            <option value="" disabled>Pilih Event Ujian</option>
+                                            {ujians.map(u => <option key={u.id} value={u.id}>{u.nama_ujian}</option>)}
+                                        </select>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                            <Filter size={16} />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">
@@ -295,7 +326,22 @@ const ExamSchedule = () => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Ruang</label>
-                                        <input type="text" name="ruang" value={formData.ruang} onChange={handleFormChange} required placeholder="R.01" className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-5 text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold placeholder:font-medium" />
+                                        <div className="relative group">
+                                            <LayoutGrid className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sunset transition-colors" size={18} />
+                                            <select
+                                                name="ruang_id"
+                                                value={formData.ruang_id}
+                                                onChange={handleFormChange}
+                                                required
+                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-10 text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold appearance-none cursor-pointer"
+                                            >
+                                                <option value="">Pilih Ruang</option>
+                                                {ruangs.map(r => <option key={r.id} value={r.id}>{r.nama_ruang} ({r.kampus})</option>)}
+                                            </select>
+                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                                <MapPin size={16} />
+                                            </div>
+                                        </div>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Sesi</label>
@@ -305,18 +351,42 @@ const ExamSchedule = () => {
 
                                 <div className="space-y-2">
                                     <label className="text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Pilih Pengawas</label>
-                                    <select name="pengawas_id" value={formData.pengawas_id} onChange={handleFormChange} required className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-5 text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold appearance-none cursor-pointer">
-                                        {filteredProctors.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                                        {filteredProctors.length === 0 && <option value="">Tidak ada pengawas terdaftar</option>}
-                                    </select>
+                                    <div className="relative group">
+                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sunset transition-colors" size={18} />
+                                        <select
+                                            name="pengawas_id"
+                                            value={formData.pengawas_id}
+                                            onChange={handleFormChange}
+                                            required
+                                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-10 text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold appearance-none cursor-pointer"
+                                        >
+                                            <option value="" disabled>Pilih Pengawas</option>
+                                            {filteredProctors.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                            {filteredProctors.length === 0 && <option value="" disabled>Tidak ada pengawas terdaftar</option>}
+                                        </select>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                            <Filter size={16} />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">
                                     <label className="text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Pengawas Pengganti (Opsional)</label>
-                                    <select name="pengawas_pengganti_id" value={formData.pengawas_pengganti_id} onChange={handleFormChange} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-5 text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold appearance-none cursor-pointer">
-                                        <option value="">-- Tidak Ada --</option>
-                                        {filteredProctors.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                                    </select>
+                                    <div className="relative group">
+                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sunset transition-colors opacity-50" size={18} />
+                                        <select
+                                            name="pengawas_pengganti_id"
+                                            value={formData.pengawas_pengganti_id}
+                                            onChange={handleFormChange}
+                                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-10 text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-sunset/10 focus:border-sunset transition-all font-bold appearance-none cursor-pointer"
+                                        >
+                                            <option value="">-- Tidak Ada --</option>
+                                            {filteredProctors.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                        </select>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                            <Filter size={16} />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
@@ -426,7 +496,7 @@ const ExamSchedule = () => {
                                                                         {schedule.sesi || 'Sesi Umum'}
                                                                     </span>
                                                                     <span className="px-3 py-0.5 bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-widest rounded-md border border-indigo-500/20">
-                                                                        {schedule.ruang || 'N/A'}
+                                                                        {schedule.ruang?.nama_ruang || 'N/A'}
                                                                     </span>
                                                                     <span className="text-[10px] font-bold text-slate-400">
                                                                         {schedule.total_siswa || 0} Siswa
@@ -498,9 +568,21 @@ const ExamSchedule = () => {
 
                             <div className="space-y-2">
                                 <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Target Ujian</label>
-                                <select value={importUjianId} onChange={(e) => setImportUjianId(e.target.value)} required className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 px-5 text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold">
-                                    {ujians.map(u => <option key={u.id} value={u.id}>{u.nama_ujian}</option>)}
-                                </select>
+                                <div className="relative group">
+                                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" size={18} />
+                                    <select
+                                        value={importUjianId}
+                                        onChange={(e) => setImportUjianId(e.target.value)}
+                                        required
+                                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-10 text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold appearance-none cursor-pointer"
+                                    >
+                                        <option value="" disabled>Pilih Target Ujian</option>
+                                        {ujians.map(u => <option key={u.id} value={u.id}>{u.nama_ujian}</option>)}
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                        <Filter size={16} />
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="space-y-2">

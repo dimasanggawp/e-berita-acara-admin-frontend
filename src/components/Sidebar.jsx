@@ -4,14 +4,23 @@ import { useAuth } from '../context/AuthContext';
 import ThemeToggle from './ThemeToggle';
 import {
     LayoutGrid, CalendarDays, UserCheck, Users, Calendar,
-    FileText, Shield, LogOut, Menu, X, ChevronRight
+    FileText, Shield, LogOut, Menu, X, ChevronRight, Layout,
+    ChevronDown, Database
 } from 'lucide-react';
 
 const menuItems = [
     { path: '/', label: 'Dashboard', icon: LayoutGrid, color: 'sunset' },
-    { path: '/tahun-ajaran', label: 'Tahun Ajaran', icon: CalendarDays, color: 'sunset' },
-    { path: '/events', label: 'Nama Ujian', icon: CalendarDays, color: 'blue-500' },
-    { path: '/proctors', label: 'Data Pengawas', icon: UserCheck, color: 'pink-500' },
+    {
+        label: 'Master Data',
+        icon: Database,
+        color: 'emerald-600',
+        items: [
+            { path: '/tahun-ajaran', label: 'Tahun Ajaran', icon: CalendarDays, color: 'sunset' },
+            { path: '/events', label: 'Nama Ujian', icon: CalendarDays, color: 'blue-500' },
+            { path: '/proctors', label: 'Data Pengawas', icon: UserCheck, color: 'pink-500' },
+            { path: '/rooms', label: 'Data Ruang', icon: Layout, color: 'emerald-500' },
+        ],
+    },
     { path: '/students', label: 'Peserta Ujian', icon: Users, color: 'amber-500' },
     { path: '/exam-schedule', label: 'Jadwal Ujian', icon: Calendar, color: 'violet' },
     { path: '/reports', label: 'Laporan', icon: FileText, color: 'slate-500' },
@@ -23,6 +32,14 @@ const Sidebar = () => {
     const location = useLocation();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
+    const [openGroups, setOpenGroups] = useState({});
+
+    const toggleGroup = (groupLabel) => {
+        setOpenGroups(prev => ({
+            ...prev,
+            [groupLabel]: !prev[groupLabel]
+        }));
+    };
 
     const isActive = (path) => {
         if (path === '/') return location.pathname === '/';
@@ -73,8 +90,76 @@ const Sidebar = () => {
                     </p>
                 )}
                 {menuItems.map((item) => {
-                    const active = isActive(item.path);
+                    const hasSubItems = item.items && item.items.length > 0;
                     const Icon = item.icon;
+
+                    if (hasSubItems) {
+                        const isOpen = openGroups[item.label];
+                        // Check if any child is active
+                        const isAnyChildActive = item.items.some(subItem => isActive(subItem.path));
+
+                        return (
+                            <div key={item.label} className="space-y-1">
+                                <button
+                                    onClick={() => {
+                                        if (collapsed) setCollapsed(false);
+                                        toggleGroup(item.label);
+                                    }}
+                                    title={collapsed ? item.label : undefined}
+                                    className={`w-full group flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 relative
+                                        ${isAnyChildActive
+                                            ? 'bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 text-emerald-600 dark:text-emerald-500 font-black border border-emerald-500/15 shadow-sm'
+                                            : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-700 dark:hover:text-slate-200 font-bold'
+                                        }
+                                        ${collapsed ? 'justify-center' : ''}
+                                    `}
+                                >
+                                    {isAnyChildActive && (
+                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-emerald-500 rounded-r-full" />
+                                    )}
+                                    <div className="flex items-center gap-3 w-full">
+                                        <Icon size={20} className={`shrink-0 transition-transform ${isAnyChildActive ? 'scale-110 text-emerald-600' : 'group-hover:scale-105'}`} />
+                                        {!collapsed && (
+                                            <span className="text-[13px] tracking-tight truncate flex-1 text-left">{item.label}</span>
+                                        )}
+                                    </div>
+                                    {!collapsed && (
+                                        <ChevronDown size={14} className={`shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-emerald-600' : 'text-slate-400'}`} />
+                                    )}
+                                </button>
+
+                                {/* Dropdown Items */}
+                                {!collapsed && isOpen && (
+                                    <div className="pl-11 pr-2 py-1 space-y-1 animate-in slide-in-from-top-2 fade-in duration-200">
+                                        {item.items.map((subItem) => {
+                                            const active = isActive(subItem.path);
+                                            const SubIcon = subItem.icon;
+                                            return (
+                                                <Link
+                                                    key={subItem.path}
+                                                    to={subItem.path}
+                                                    onClick={() => setMobileOpen(false)}
+                                                    className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 
+                                                        ${active
+                                                            ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 font-bold border border-emerald-500/10 shadow-sm'
+                                                            : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-700 dark:hover:text-slate-200 font-medium'
+                                                        }
+                                                    `}
+                                                >
+                                                    <SubIcon size={16} className={`shrink-0 transition-transform ${active ? 'scale-110' : 'group-hover:scale-105'}`} />
+                                                    <span className="text-xs truncate">{subItem.label}</span>
+                                                    {active && <ChevronRight size={12} className="ml-auto text-emerald-500/50" />}
+                                                </Link>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    }
+
+                    // Normal rendering for single items
+                    const active = isActive(item.path);
                     return (
                         <Link
                             key={item.path}
