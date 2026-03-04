@@ -34,8 +34,8 @@ const Proctors = () => {
         setLoading(true);
         try {
             const [proctorsRes, ujiansRes] = await Promise.all([
-                axios.get('http://localhost:8000/api/pengawas'),
-                axios.get('http://localhost:8000/api/ujians')
+                axios.get('/api/pengawas'),
+                axios.get('/api/ujians')
             ]);
             setProctors(proctorsRes.data);
             setUjians(ujiansRes.data);
@@ -96,11 +96,11 @@ const Proctors = () => {
 
         try {
             if (editMode) {
-                await axios.put(`http://localhost:8000/api/pengawas/${editingId}`, formData);
+                await axios.put(`/api/pengawas/${editingId}`, formData);
                 setSuccess('Data Pengawas berhasil diperbarui!');
                 cancelEdit();
             } else {
-                await axios.post('http://localhost:8000/api/pengawas', formData);
+                await axios.post('/api/pengawas', formData);
                 setSuccess('Pengawas baru berhasil ditambahkan!');
                 setFormData(prev => ({
                     ...prev,
@@ -110,7 +110,7 @@ const Proctors = () => {
                 }));
             }
             // Refresh proctors only
-            const res = await axios.get('http://localhost:8000/api/pengawas');
+            const res = await axios.get('/api/pengawas');
             setProctors(res.data);
         } catch (err) {
             const msg = err.response?.data?.message || 'Gagal menyimpan data.';
@@ -122,7 +122,7 @@ const Proctors = () => {
 
     // Import Handlers
     const handleDownloadTemplate = () => {
-        window.location.href = 'http://localhost:8000/api/pengawas/template-import';
+        window.location.href = '/api/pengawas/template-import';
     };
 
     const handleImportSubmit = async (e) => {
@@ -143,7 +143,7 @@ const Proctors = () => {
         formData.append('ujian_id', importUjianId);
 
         try {
-            const response = await axios.post('http://localhost:8000/api/pengawas/import', formData, {
+            const response = await axios.post('/api/pengawas/import', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setSuccess(response.data.message);
@@ -151,7 +151,7 @@ const Proctors = () => {
                 setError('Beberapa data gagal diimpor: ' + response.data.errors.join(', '));
             }
             setShowImportModal(false);
-            const res = await axios.get('http://localhost:8000/api/pengawas');
+            const res = await axios.get('/api/pengawas');
             setProctors(res.data);
         } catch (err) {
             setError(err.response?.data?.message || 'Gagal mengimpor file.');
@@ -164,9 +164,9 @@ const Proctors = () => {
         if (!window.confirm('Apakah Anda yakin ingin menghapus pengawas ini?')) return;
 
         try {
-            await axios.delete(`http://localhost:8000/api/pengawas/${id}`);
+            await axios.delete(`/api/pengawas/${id}`);
             setSuccess('Pengawas berhasil dihapus.');
-            const res = await axios.get('http://localhost:8000/api/pengawas');
+            const res = await axios.get('/api/pengawas');
             setProctors(res.data);
         } catch (err) {
             setError('Gagal menghapus pengawas. Pastikan tidak ada jadwal terkait.');

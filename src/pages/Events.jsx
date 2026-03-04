@@ -32,8 +32,8 @@ const Events = () => {
         setLoading(true);
         try {
             const [eventsRes, tahunAjaranRes] = await Promise.all([
-                axios.get('http://localhost:8000/api/ujians'),
-                axios.get('http://localhost:8000/api/tahun-ajaran')
+                axios.get('/api/ujians'),
+                axios.get('/api/tahun-ajaran')
             ]);
             setEvents(eventsRes.data);
             setAvailableTahunAjaran(tahunAjaranRes.data);
@@ -101,11 +101,11 @@ const Events = () => {
 
         try {
             if (editMode) {
-                await axios.put(`http://localhost:8000/api/ujians/${editingId}`, formData);
+                await axios.put(`/api/ujians/${editingId}`, formData);
                 setSuccess('Nama Ujian berhasil diperbarui!');
                 cancelEdit();
             } else {
-                await axios.post('http://localhost:8000/api/ujians', formData);
+                await axios.post('/api/ujians', formData);
                 setSuccess('Nama Ujian baru berhasil ditambahkan!');
                 setFormData({ nama_ujian: '', tahun_ajaran: '', jenjang: '', is_active: true });
             }
@@ -122,7 +122,7 @@ const Events = () => {
         if (!window.confirm('Apakah Anda yakin ingin menghapus ujian ini? Data terkait mungkin akan bermasalah.')) return;
 
         try {
-            await axios.delete(`http://localhost:8000/api/ujians/${id}`);
+            await axios.delete(`/api/ujians/${id}`);
             setSuccess('Ujian berhasil dihapus.');
             fetchEvents();
         } catch (err) {

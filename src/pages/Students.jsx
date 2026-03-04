@@ -42,8 +42,8 @@ const Students = () => {
         try {
             const params = ujianId ? { ujian_id: ujianId } : {};
             const [studentsRes, metaRes] = await Promise.all([
-                axios.get('http://localhost:8000/api/peserta-ujian', { params }),
-                axios.get('http://localhost:8000/api/peserta-ujian-meta', { params })
+                axios.get('/api/peserta-ujian', { params }),
+                axios.get('/api/peserta-ujian-meta', { params })
             ]);
             setStudents(studentsRes.data);
             setMeta(metaRes.data);
@@ -103,11 +103,11 @@ const Students = () => {
 
         try {
             if (editMode) {
-                await axios.put(`http://localhost:8000/api/peserta-ujian/${editingId}`, formData);
+                await axios.put(`/api/peserta-ujian/${editingId}`, formData);
                 setSuccess('Data peserta berhasil diperbarui!');
                 cancelEdit();
             } else {
-                await axios.post('http://localhost:8000/api/peserta-ujian', formData);
+                await axios.post('/api/peserta-ujian', formData);
                 setSuccess('Peserta baru berhasil ditambahkan!');
                 setFormData({ nama: '', nisn: '', nomor_peserta: '', kelas: '', ruang_id: '', sesi: '', ujian_id: '' });
             }
@@ -122,7 +122,7 @@ const Students = () => {
 
     const handleDownloadTemplate = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/api/peserta-ujian/template', {
+            const response = await axios.get('/api/peserta-ujian/template', {
                 responseType: 'blob'
             });
             const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -161,7 +161,7 @@ const Students = () => {
         importData.append('ujian_id', importUjianId);
 
         try {
-            const res = await axios.post('http://localhost:8000/api/peserta-ujian/import', importData, {
+            const res = await axios.post('/api/peserta-ujian/import', importData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
@@ -181,7 +181,7 @@ const Students = () => {
         if (!window.confirm('Apakah Anda yakin ingin menghapus peserta ini?')) return;
 
         try {
-            await axios.delete(`http://localhost:8000/api/peserta-ujian/${id}`);
+            await axios.delete(`/api/peserta-ujian/${id}`);
             setSuccess('Peserta berhasil dihapus.');
             fetchData();
         } catch (err) {

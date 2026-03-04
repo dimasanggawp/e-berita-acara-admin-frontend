@@ -32,7 +32,7 @@ const Rooms = () => {
         setLoading(true);
         try {
             // Fetch Ujians
-            const resUjians = await axios.get('http://localhost:8000/api/ujians', {
+            const resUjians = await axios.get('/api/ujians', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const activeUjians = resUjians.data.filter(u => u.is_active);
@@ -45,7 +45,7 @@ const Rooms = () => {
             }
 
             if (currentUjianId) {
-                const resRuang = await axios.get(`http://localhost:8000/api/ruang?ujian_id=${currentUjianId}`, {
+                const resRuang = await axios.get(`/api/ruang?ujian_id=${currentUjianId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setRuangData(resRuang.data);
@@ -115,11 +115,11 @@ const Rooms = () => {
             };
 
             if (editMode) {
-                await axios.put(`http://localhost:8000/api/ruang/${editingId}`, payload, config);
+                await axios.put(`/api/ruang/${editingId}`, payload, config);
                 setSuccess('Data Ruang berhasil diperbarui!');
                 cancelEdit();
             } else {
-                await axios.post('http://localhost:8000/api/ruang', payload, config);
+                await axios.post('/api/ruang', payload, config);
                 setSuccess('Ruang baru berhasil ditambahkan!');
                 setFormData({ nama_ruang: '', kampus: 'Kampus 1' });
             }
@@ -134,7 +134,7 @@ const Rooms = () => {
 
     // Import Handlers
     const handleDownloadTemplate = () => {
-        window.location.href = 'http://localhost:8000/api/ruang/template-import';
+        window.location.href = '/api/ruang/template-import';
     };
 
     const handleImportSubmit = async (e) => {
@@ -155,7 +155,7 @@ const Rooms = () => {
         formDataFile.append('ujian_id', selectedUjianId);
 
         try {
-            const response = await axios.post('http://localhost:8000/api/ruang/import', formDataFile, {
+            const response = await axios.post('/api/ruang/import', formDataFile, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     Authorization: `Bearer ${token}`
@@ -178,7 +178,7 @@ const Rooms = () => {
         if (!window.confirm('Apakah Anda yakin ingin menghapus ruang ini?')) return;
 
         try {
-            await axios.delete(`http://localhost:8000/api/ruang/${id}`, {
+            await axios.delete(`/api/ruang/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setSuccess('Ruang berhasil dihapus.');

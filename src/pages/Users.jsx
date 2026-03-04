@@ -30,7 +30,7 @@ const Users = () => {
     const fetchUsers = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await axios.get('http://localhost:8000/api/users');
+            const response = await axios.get('/api/users');
             setUsers(response.data);
             setError('');
         } catch (err) {
@@ -77,11 +77,11 @@ const Users = () => {
 
         try {
             if (editMode) {
-                await axios.put(`http://localhost:8000/api/users/${editingId}`, formData);
+                await axios.put(`/api/users/${editingId}`, formData);
                 setSuccess('Pengguna berhasil diperbarui!');
                 cancelEdit();
             } else {
-                await axios.post('http://localhost:8000/api/users', formData);
+                await axios.post('/api/users', formData);
                 setSuccess('Pengguna baru berhasil ditambahkan!');
                 setFormData({ name: '', username: '', password: '' });
             }
@@ -103,7 +103,7 @@ const Users = () => {
         if (!window.confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) return;
 
         try {
-            await axios.delete(`http://localhost:8000/api/users/${id}`);
+            await axios.delete(`/api/users/${id}`);
             setSuccess('Pengguna berhasil dihapus.');
             fetchUsers();
         } catch (err) {

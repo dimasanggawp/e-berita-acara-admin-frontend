@@ -27,7 +27,7 @@ const TahunAjaran = () => {
     const fetchYears = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await axios.get('http://localhost:8000/api/tahun-ajaran');
+            const response = await axios.get('/api/tahun-ajaran');
             setYears(response.data);
             setError('');
         } catch (err) {
@@ -95,11 +95,11 @@ const TahunAjaran = () => {
         try {
             const dataToSubmit = { ...formData, tahun: trimmedTahun };
             if (editMode) {
-                await axios.put(`http://localhost:8000/api/tahun-ajaran/${editingId}`, dataToSubmit);
+                await axios.put(`/api/tahun-ajaran/${editingId}`, dataToSubmit);
                 setSuccess('Tahun Ajaran berhasil diperbarui!');
                 cancelEdit();
             } else {
-                await axios.post('http://localhost:8000/api/tahun-ajaran', dataToSubmit);
+                await axios.post('/api/tahun-ajaran', dataToSubmit);
                 setSuccess('Tahun Ajaran baru berhasil ditambahkan!');
                 setFormData({ tahun: '', is_active: true });
             }
@@ -116,7 +116,7 @@ const TahunAjaran = () => {
         if (!window.confirm('Apakah Anda yakin ingin menghapus Tahun Ajaran ini?')) return;
 
         try {
-            await axios.delete(`http://localhost:8000/api/tahun-ajaran/${id}`);
+            await axios.delete(`/api/tahun-ajaran/${id}`);
             setSuccess('Tahun Ajaran berhasil dihapus.');
             fetchYears();
         } catch (err) {

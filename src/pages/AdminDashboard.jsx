@@ -44,7 +44,7 @@ const AdminDashboard = () => {
     useEffect(() => {
         const checkSystemHealth = async () => {
             try {
-                const response = await axios.get('http://localhost:8000/api/health-check');
+                const response = await axios.get('/api/health-check');
                 setSystemStatus({
                     api: 'ok',
                     database: response.data.database === 'connected' ? 'connected' : 'disconnected',
@@ -71,7 +71,7 @@ const AdminDashboard = () => {
             if (selectedUjian) params.ujian_id = selectedUjian;
             if (selectedDate) params.date = selectedDate;
 
-            const res = await axios.get('http://localhost:8000/api/dashboard/attendance-stats', { params });
+            const res = await axios.get('/api/dashboard/attendance-stats', { params });
             const data = res.data;
 
             setAttendanceData(data);
@@ -95,7 +95,7 @@ const AdminDashboard = () => {
         try {
             const params = { ujian_id: selectedUjian };
             if (selectedDate) params.date = selectedDate;
-            const res = await axios.get('http://localhost:8000/api/dashboard/attendance-by-campus', { params });
+            const res = await axios.get('/api/dashboard/attendance-by-campus', { params });
             setCampusData(res.data);
         } catch (err) {
             console.error('Failed to fetch campus stats', err);
@@ -112,7 +112,7 @@ const AdminDashboard = () => {
         try {
             const params = { ujian_id: selectedUjian, kampus: campusName };
             if (selectedDate) params.date = selectedDate;
-            const res = await axios.get('http://localhost:8000/api/dashboard/attendance-by-class', { params });
+            const res = await axios.get('/api/dashboard/attendance-by-class', { params });
             setClassData(res.data);
         } catch (err) {
             console.error('Failed to fetch class stats', err);
@@ -133,7 +133,7 @@ const AdminDashboard = () => {
                 kelas: className
             };
             if (selectedDate) params.date = selectedDate;
-            const res = await axios.get('http://localhost:8000/api/dashboard/attendance-students', { params });
+            const res = await axios.get('/api/dashboard/attendance-students', { params });
             setStudentListData(res.data);
         } catch (err) {
             console.error('Failed to fetch student list', err);
@@ -537,8 +537,8 @@ const AdminDashboard = () => {
                                                         </td>
                                                         <td className="px-6 py-4 text-center">
                                                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${student.status === 'Hadir'
-                                                                    ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                                                                    : 'bg-red-500/10 text-red-600 border-red-500/20'
+                                                                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                                                                : 'bg-red-500/10 text-red-600 border-red-500/20'
                                                                 }`}>
                                                                 {student.status === 'Hadir' ? <CheckCircle2 size={12} /> : <Clock size={12} />}
                                                                 {student.status}

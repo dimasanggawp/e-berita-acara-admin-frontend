@@ -43,8 +43,8 @@ const ExamSchedule = () => {
         setLoading(true);
         try {
             const [schedulesRes, ujiansRes] = await Promise.all([
-                axios.get('http://localhost:8000/api/jadwal-ujian'),
-                axios.get('http://localhost:8000/api/ujians')
+                axios.get('/api/jadwal-ujian'),
+                axios.get('/api/ujians')
             ]);
             setSchedules(schedulesRes.data);
             const activeUjians = ujiansRes.data.filter(u => u.is_active);
@@ -67,8 +67,8 @@ const ExamSchedule = () => {
         if (!ujianId) return;
         try {
             const [proctorsRes, ruangsRes] = await Promise.all([
-                axios.get('http://localhost:8000/api/pengawas', { params: { ujian_id: ujianId } }),
-                axios.get('http://localhost:8000/api/ruang', { params: { ujian_id: ujianId } })
+                axios.get('/api/pengawas', { params: { ujian_id: ujianId } }),
+                axios.get('/api/ruang', { params: { ujian_id: ujianId } })
             ]);
             setProctors(proctorsRes.data);
             setRuangs(ruangsRes.data);
@@ -76,7 +76,6 @@ const ExamSchedule = () => {
             console.error('Failed to fetch dependent data', error);
         }
     }, []);
-
     useEffect(() => {
         fetchInitialData();
     }, [fetchInitialData]);
@@ -146,7 +145,7 @@ const ExamSchedule = () => {
     const handleDelete = async (id) => {
         if (!window.confirm('Hapus jadwal ini?')) return;
         try {
-            await axios.delete(`http://localhost:8000/api/jadwal-ujian/${id}`);
+            await axios.delete(`/api/jadwal-ujian/${id}`);
             setSuccess('Jadwal berhasil dihapus');
             fetchInitialData();
         } catch (err) {
@@ -161,11 +160,11 @@ const ExamSchedule = () => {
         setSuccess('');
         try {
             if (editMode) {
-                await axios.put(`http://localhost:8000/api/jadwal-ujian/${editingId}`, formData);
+                await axios.put(`/api/jadwal-ujian/${editingId}`, formData);
                 setSuccess('Jadwal berhasil diperbarui');
                 cancelEdit();
             } else {
-                await axios.post('http://localhost:8000/api/jadwal-ujian', formData);
+                await axios.post('/api/jadwal-ujian', formData);
                 setSuccess('Jadwal berhasil ditambahkan');
                 setFormData(prev => ({
                     ...prev,
@@ -196,7 +195,7 @@ const ExamSchedule = () => {
         importData.append('ujian_id', importUjianId);
 
         try {
-            const res = await axios.post('http://localhost:8000/api/jadwal-ujian/import', importData, {
+            const res = await axios.post('/api/jadwal-ujian/import', importData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setSuccess(res.data.message);
@@ -559,7 +558,7 @@ const ExamSchedule = () => {
                                 <FileSpreadsheet size={40} className="mx-auto text-slate-300 mb-4" />
                                 <p className="text-sm font-bold text-slate-600 dark:text-slate-300 mb-4">Pastikan format Excel sesuai template</p>
                                 <a
-                                    href="http://localhost:8000/api/jadwal-ujian/template"
+                                    href="/api/jadwal-ujian/template"
                                     className="inline-flex items-center gap-2 px-6 py-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-black uppercase tracking-wide hover:bg-emerald-500/20 transition-all"
                                 >
                                     <Download size={14} /> Download Template
