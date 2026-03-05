@@ -17,8 +17,8 @@ const Reports = () => {
     const [showModal, setShowModal] = useState(false);
     const [isBulkPrinting, setIsBulkPrinting] = useState(false);
 
-    const fetchReports = useCallback(async () => {
-        setLoading(true);
+    const fetchReports = useCallback(async (showLoading = true) => {
+        if (showLoading) setLoading(true);
         try {
             const params = selectedUjianId ? { ujian_id: selectedUjianId } : {};
             const [reportsRes, ujianRes, tahunAjaranRes] = await Promise.all([
@@ -32,12 +32,22 @@ const Reports = () => {
         } catch (err) {
             console.error('Failed to fetch reports', err);
         } finally {
-            setLoading(false);
+            if (showLoading) setLoading(false);
         }
     }, [selectedUjianId]);
 
+    // Initial fetch and manual re-fetch when selectedUjianId changes
     useEffect(() => {
-        fetchReports();
+        fetchReports(true);
+    }, [fetchReports]);
+
+    // Background polling every 10 seconds for real-time updates
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchReports(false);
+        }, 10000); // 10 seconds
+
+        return () => clearInterval(interval);
     }, [fetchReports]);
 
     // Filter ujians by selected tahun ajaran
@@ -351,39 +361,54 @@ const BeritaAcaraDocument = ({ report }) => {
     // LaporanController explicitly returns 'kelas' object if it exists (from DB relation) or falls back to 'kelas_name' from the getAssignment/list API if it's mixed
     const displayKelas = report.kelas?.nama_kelas || report.kelas_name || (typeof report.kelas === 'string' ? report.kelas : '-');
 
-    // Generate blank lines for absent names
+    // Ensure blank lines don't push content to second page
     const absentLines = report.absent_details
         ? report.absent_details.split('\n').filter(Boolean)
         : [];
-    const blankLinesNeeded = Math.max(5 - absentLines.length, 2);
+    const maxLines = 15; // Max limit to avoid pushing footprint down
+    const safeAbsentLines = absentLines.slice(0, maxLines);
+    const blankLinesNeeded = Math.max(0, 3 - safeAbsentLines.length);
 
-    // Prepare signature URL. LaporanController returns signature_url which is already a full path
-    const sigUrl = report.signature_url || (report.signature_path ? (report.signature_path.startsWith('http') ? report.signature_path : `${window.location.protocol}//${window.location.hostname}:8000/storage/${report.signature_path}`) : null);
+    // Prepare signature URL. LaporanController returns signature_url which might be missing port 8000 in dev environments
+    let sigUrl = null;
+    if (report.signature_path) {
+        const cleanPath = report.signature_path.replace(/^storage\//, '').replace(/^public\//, '');
+        sigUrl = `http://${window.location.hostname}:8000/storage/${cleanPath}`;
+    } else if (report.signature_url) {
+        sigUrl = report.signature_url.includes(':8000') ? report.signature_url : report.signature_url.replace(window.location.hostname, `${window.location.hostname}:8000`);
+    }
 
     return (
-        <div className="bg-white text-black" style={{ fontFamily: 'Times New Roman, serif', fontSize: '12pt' }}>
-            {/* Page */}
-            <div className="px-[20mm] py-[10mm] print:px-[20mm] print:py-[10mm] flex flex-col" style={{ minHeight: '297mm', position: 'relative' }}>
+        <div className="bg-white text-black shrink-0 relative overflow-hidden" style={{ fontFamily: 'Times New Roman, serif', fontSize: '11pt' }}>
+            <style type="text/css" media="print">
+                {`
+                    @page { size: A4 portrait; margin: 0; }
+                    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                `}
+            </style>
+
+            {/* Page Container forced to exactly 1 A4 page dimensions */}
+            <div className="px-[20mm] py-[10mm] print:px-[15mm] print:py-[10mm] print:pb-[15mm] flex flex-col w-[210mm] min-h-[297mm] print:h-[297mm] mx-auto box-border relative">
 
                 {/* Kop Surat */}
                 <div className="mb-2 shrink-0">
-                    <img src="/kop-surat.png" alt="Kop Surat SMK Kartanegara Wates" className="w-full" />
+                    <img src="/kop-surat.png" alt="Kop Surat SMK Kartanegara Wates" className="w-full h-auto max-h-[35mm]" />
                 </div>
 
                 {/* Title */}
-                <div className="text-center mb-6 mt-4 shrink-0">
-                    <p className="font-bold text-[14pt] tracking-wide">BERITA ACARA</p>
-                    <p className="font-bold text-[12pt]">{headerTitle}</p>
-                    <p className="font-bold text-[12pt]">SMK KARTANEGARA WATES KAB. KEDIRI</p>
+                <div className="text-center mb-4 mt-2 shrink-0">
+                    <p className="font-bold text-[13pt] tracking-wide">BERITA ACARA</p>
+                    <p className="font-bold text-[11pt]">{headerTitle}</p>
+                    <p className="font-bold text-[11pt]">SMK KARTANEGARA WATES KAB. KEDIRI</p>
                 </div>
 
                 {/* Opening Paragraph */}
-                <p className="mb-4 text-justify leading-relaxed shrink-0">
+                <p className="mb-3 text-justify leading-relaxed shrink-0">
                     Pada hari ini {formatDateFormal(report.mulai_ujian)}, telah diselenggarakan {ujianName.toLowerCase()} kelas {getTingkatText(displayKelas)} matapelajaran {report.nama_mapel?.toLowerCase() || '-'} mulai pukul {formatTime(report.mulai_ujian)} sampai pukul {formatTime(report.ujian_berakhir)} pada :
                 </p>
 
                 {/* Info Table */}
-                <div className="ml-8 mb-6 shrink-0">
+                <div className="ml-8 mb-4 shrink-0">
                     <table className="w-full">
                         <tbody>
                             <InfoRow label="1. Sekolah" value="SMK Kartanegara Wates" />
@@ -399,49 +424,49 @@ const BeritaAcaraDocument = ({ report }) => {
                     </table>
 
                     {/* Absent details */}
-                    <div className="mt-2 shrink-0">
+                    <div className="mt-2 shrink-0 text-[10pt]">
                         <p style={{ paddingLeft: '1.5em' }}>Nama peserta yang tidak hadir :</p>
-                        <div className="mt-2 ml-6">
-                            {absentLines.map((line, i) => (
-                                <p key={i} className="border-b border-black py-1">{line}</p>
+                        <div className="mt-1 ml-6">
+                            {safeAbsentLines.map((line, i) => (
+                                <p key={i} className="border-b border-black py-[2px]">{line}</p>
                             ))}
-                            {Array.from({ length: blankLinesNeeded }).map((_, i) => (
-                                <div key={`blank-${i}`} className="border-b border-black h-6 mt-1" />
+                            {safeAbsentLines.length === 0 && Array.from({ length: Math.min(blankLinesNeeded, 2) }).map((_, i) => (
+                                <div key={`blank-${i}`} className="border-b border-black h-5 mt-1" />
                             ))}
                         </div>
                     </div>
                 </div>
 
                 {/* Section 2: Catatan */}
-                <div className="mb-8 shrink-0">
-                    <p className="font-bold mb-2">2. Catatan pelaksanaan :</p>
-                    <div className="border border-black rounded-sm min-h-[120px] p-3">
+                <div className="mb-2 shrink-0">
+                    <p className="font-bold mb-1">2. Catatan pelaksanaan :</p>
+                    <div className="border border-black rounded-sm min-h-[60px] max-h-[80px] overflow-hidden p-2 text-[10pt]">
                         <p className="whitespace-pre-wrap">{report.notes || ''}</p>
                     </div>
                 </div>
 
                 {/* Section 3 & 4: Pengawas & Tanda Tangan (Pushed to bottom) */}
-                <div className="flex justify-between mt-auto pt-8" style={{ pageBreakInside: 'avoid' }}>
+                <div className="flex justify-between mt-12 mb-[10mm] shrink-0">
                     <div className="w-[45%]">
-                        <p className="font-bold mb-2">3. Nama pengawas ruang</p>
-                        <div className="border border-black rounded-sm min-h-[80px] p-3 flex items-center justify-center">
-                            <p className="text-center font-bold">{report.pengawas?.name || '-'}</p>
+                        <p className="font-bold mb-1">3. Nama pengawas ruang</p>
+                        <div className="border border-black rounded-sm h-[60px] p-2 flex items-center justify-center">
+                            <p className="text-center font-bold text-[10pt]">{report.pengawas?.name || '-'}</p>
                         </div>
                     </div>
                     <div className="w-[45%]">
-                        <p className="font-bold mb-2">4. Tanda tangan pengawas</p>
-                        <div className="border border-black rounded-sm min-h-[80px] p-2 flex items-center justify-center">
+                        <p className="font-bold mb-1">4. Tanda tangan pengawas</p>
+                        <div className="border border-black rounded-sm h-[60px] p-2 flex items-center justify-center">
                             {sigUrl ? (
-                                <img src={sigUrl} alt="Tanda tangan" className="max-h-[70px] object-contain" />
+                                <img src={sigUrl} alt="Tanda tangan" className="max-h-[50px] object-contain" />
                             ) : (
-                                <p className="text-slate-400 text-sm italic">Tidak ada tanda tangan</p>
+                                <p className="text-slate-400 text-sm italic">Tidak ada</p>
                             )}
                         </div>
                     </div>
                 </div>
 
                 {/* Footer */}
-                <div className="absolute bottom-[10mm] left-[20mm] right-[20mm] print:bottom-[10mm]">
+                <div className="absolute bottom-[8mm] left-[15mm] right-[15mm] print:bottom-[8mm]">
                     <div className="flex justify-between items-center bg-slate-800 text-white text-[9pt] px-4 py-2 rounded-sm italic">
                         <span>Berita Acara</span>
                         <span>SMK Kartanegara Wates</span>
