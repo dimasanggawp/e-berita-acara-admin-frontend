@@ -342,10 +342,12 @@ const BeritaAcaraDocument = ({ report }) => {
     };
 
     const getTingkatText = (kelasName) => {
-        if (!kelasName || kelasName === '-' || String(kelasName).startsWith('Gabungan')) return '-';
-        if (String(kelasName).startsWith('XII')) return 'XII';
-        if (String(kelasName).startsWith('XI')) return 'XI';
-        if (String(kelasName).startsWith('X')) return 'X';
+        if (!kelasName || kelasName === '-') return '-';
+        // Match Roman numerals for high school grades, unique them, and join them
+        const matches = String(kelasName).match(/\b(XII|XI|X)\b/g);
+        if (matches && matches.length > 0) {
+            return [...new Set(matches)].join(', ');
+        }
         return '-';
     };
 

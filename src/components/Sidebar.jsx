@@ -18,6 +18,7 @@ const menuItems = [
             { path: '/tahun-ajaran', label: 'Tahun Ajaran', icon: CalendarDays, color: 'sunset' },
             { path: '/events', label: 'Nama Ujian', icon: CalendarDays, color: 'blue-500' },
             { path: '/proctors', label: 'Data Pengawas', icon: UserCheck, color: 'pink-500' },
+            { path: '/committee', label: 'Data Panitia', icon: Users, color: 'violet' },
             { path: '/rooms', label: 'Data Ruang', icon: Layout, color: 'emerald-500' },
         ],
     },

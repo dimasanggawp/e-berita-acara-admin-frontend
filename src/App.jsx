@@ -7,6 +7,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import Users from './pages/Users';
 import Events from './pages/Events';
 import Proctors from './pages/Proctors';
+import Committee from './pages/Committee';
 import TahunAjaran from './pages/TahunAjaran';
 import Students from './pages/Students';
 import ExamSchedule from './pages/ExamSchedule';
@@ -35,6 +36,7 @@ const AppContent = () => {
         <Route path="/users" element={<Users />} />
         <Route path="/events" element={<Events />} />
         <Route path="/proctors" element={<Proctors />} />
+        <Route path="/committee" element={<Committee />} />
         <Route path="/tahun-ajaran" element={<TahunAjaran />} />
         <Route path="/students" element={<Students />} />
         <Route path="/exam-schedule" element={<ExamSchedule />} />
